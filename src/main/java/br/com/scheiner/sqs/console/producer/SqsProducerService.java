@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.consumer.producer;
+package br.com.scheiner.sqs.console.producer;
 
 import java.util.Map;
 

@@ -1,11 +1,11 @@
-package br.com.scheiner.sqs.consumer.controller;
+package br.com.scheiner.sqs.console.controller;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import br.com.scheiner.sqs.consumer.consumer.SqsConsumerService;
+import br.com.scheiner.sqs.console.consumer.SqsConsumerService;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import software.amazon.awssdk.services.sqs.model.Message;

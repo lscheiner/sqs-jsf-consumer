@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.consumer.consumer;
+package br.com.scheiner.sqs.console.consumer;
 
 import java.util.List;
 

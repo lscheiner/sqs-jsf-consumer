@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.consumer.config;
+package br.com.scheiner.sqs.console.config;
 
 import java.net.URI;
 

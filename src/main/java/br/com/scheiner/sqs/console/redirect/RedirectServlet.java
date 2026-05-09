@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.consumer.redirect;
+package br.com.scheiner.sqs.console.redirect;
 
 import java.io.IOException;
 
