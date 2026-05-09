@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import br.com.scheiner.sqs.console.producer.SqsProducerService;
+import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
@@ -21,17 +21,20 @@ public class SqsProducerController {
     private final List<String> filas;
 
     private final SqsProducerService sqsProducerService;
+    
+    private final SqsQueueService sqsQueueService;
 
     private String payload;
 
     private String filaSelecionada;
 
     public SqsProducerController(
-            @Value("${app.sqs.filas}") List<String> filas,
+    		SqsQueueService sqsQueueService,
             SqsProducerService sqsProducerService) {
 
-        this.filas = filas;
+        this.filas = sqsQueueService.listarFilas();
         this.sqsProducerService = sqsProducerService;
+        this.sqsQueueService = sqsQueueService;
 
         LOGGER.info("SqsController inicializada com {} filas configuradas",  filas.size());
     }

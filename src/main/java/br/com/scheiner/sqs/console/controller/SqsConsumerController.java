@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 
 import br.com.scheiner.sqs.console.consumer.SqsConsumerService;
+import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import software.amazon.awssdk.services.sqs.model.Message;
@@ -17,6 +18,8 @@ public class SqsConsumerController  {
     private final List<String> filas;
 
     private final SqsConsumerService sqsConsumerService;
+    
+    private final SqsQueueService sqsQueueService;
 
     private String filaSelecionada;
 
@@ -27,13 +30,14 @@ public class SqsConsumerController  {
     private String conteudoMensagem;
 
     public SqsConsumerController(
-            @Value("${app.sqs.filas}") List<String> filas,
+    		SqsQueueService sqsQueueService,
             SqsConsumerService sqsConsumerService) {
 
-        this.filas = filas;
+        this.filas = sqsQueueService.listarFilas();
         this.sqsConsumerService = sqsConsumerService;
         this.mensagens = new ArrayList<>();
         this.quantidadeMensagens = 5 ;
+        this.sqsQueueService = sqsQueueService;
     }
 
     public void buscarMensagens() {
