@@ -18,8 +18,6 @@ public class SqsProducerController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsProducerController.class);
 
-    private final List<String> filas;
-
     private final SqsProducerService sqsProducerService;
     
     private final SqsQueueService sqsQueueService;
@@ -32,11 +30,9 @@ public class SqsProducerController {
     		SqsQueueService sqsQueueService,
             SqsProducerService sqsProducerService) {
 
-        this.filas = sqsQueueService.listarFilas();
         this.sqsProducerService = sqsProducerService;
         this.sqsQueueService = sqsQueueService;
 
-        LOGGER.info("SqsController inicializada com {} filas configuradas",  filas.size());
     }
 
     public void enviarMensagem() {
@@ -59,7 +55,7 @@ public class SqsProducerController {
     }
 
     public List<String> getFilas() {
-        return filas;
+        return sqsQueueService.listarFilas();
     }
 
     public String getPayload() {

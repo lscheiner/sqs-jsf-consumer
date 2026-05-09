@@ -3,8 +3,6 @@ package br.com.scheiner.sqs.console.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import br.com.scheiner.sqs.console.consumer.SqsConsumerService;
 import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.view.ViewScoped;
@@ -14,8 +12,6 @@ import software.amazon.awssdk.services.sqs.model.Message;
 @Named
 @ViewScoped
 public class SqsConsumerController  {
-
-    private final List<String> filas;
 
     private final SqsConsumerService sqsConsumerService;
     
@@ -33,7 +29,6 @@ public class SqsConsumerController  {
     		SqsQueueService sqsQueueService,
             SqsConsumerService sqsConsumerService) {
 
-        this.filas = sqsQueueService.listarFilas();
         this.sqsConsumerService = sqsConsumerService;
         this.mensagens = new ArrayList<>();
         this.quantidadeMensagens = 5 ;
@@ -49,7 +44,7 @@ public class SqsConsumerController  {
     }
 
     public List<String> getFilas() {
-        return filas;
+        return sqsQueueService.listarFilas();
     }
 
     public String getFilaSelecionada() {
