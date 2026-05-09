@@ -20,9 +20,9 @@ public class SqsConsumerController  {
 
     private String filaSelecionada;
 
-    private Integer quantidadeMensagens = 5;
+    private Integer quantidadeMensagens;
 
-    private List<Message> mensagens = new ArrayList<>();
+    private List<Message> mensagens;
 
     private String conteudoMensagem;
 
@@ -32,18 +32,16 @@ public class SqsConsumerController  {
 
         this.filas = filas;
         this.sqsConsumerService = sqsConsumerService;
+        this.mensagens = new ArrayList<>();
+        this.quantidadeMensagens = 5 ;
     }
 
     public void buscarMensagens() {
-
-        mensagens = sqsConsumerService.consumirMensagens(
-                filaSelecionada,
-                quantidadeMensagens);
+        this.mensagens = this.sqsConsumerService.consumirMensagens(this.filaSelecionada, this.quantidadeMensagens);
     }
 
     public void visualizarMensagem(Message mensagem) {
-
-        conteudoMensagem = mensagem.body();
+        this.conteudoMensagem = mensagem.body();
     }
 
     public List<String> getFilas() {

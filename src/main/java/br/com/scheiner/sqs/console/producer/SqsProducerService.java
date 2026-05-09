@@ -47,10 +47,6 @@ public class SqsProducerService {
     }
 
     private String montarQueueUrl(String fila) {
-
-        return "%s/%s/%s".formatted(
-                endpoint,
-                ACCOUNT_ID,
-                fila);
+        return "%s/%s/%s".formatted(endpoint, ACCOUNT_ID, fila);
     }
 }
