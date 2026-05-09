@@ -30,7 +30,7 @@
 												   style="font-weight:600;" />
 
 									<p:selectOneMenu id="fila"
-													 value="#{sqsController.filaSelecionada}"
+													 value="#{sqsProducerController.filaSelecionada}"
 													 required="true"
 													 requiredMessage="Selecione uma fila."
 													 filter="true"
@@ -41,7 +41,7 @@
 													  itemValue="#{null}"
 													  noSelectionOption="true" />
 
-										<f:selectItems value="#{sqsController.filas}" />
+										<f:selectItems value="#{sqsProducerController.filas}" />
 
 									</p:selectOneMenu>
 
@@ -54,7 +54,7 @@
 												   style="font-weight:600;" />
 
 									<p:inputTextarea id="mensagem"
-													 value="#{sqsController.payload}"
+													 value="#{sqsProducerController.payload}"
 													 rows="18"
 													 autoResize="false"
 													 maxlength="10000"
@@ -86,13 +86,13 @@
 														 outlined="true"
 														 process="@this"
 														 update="@form"
-														 action="#{sqsController.limpar}"
+														 action="#{sqsProducerController.limpar}"
 														 styleClass="ui-button-flat" />
 
 										<p:commandButton id="btnEnviar"
 														 value="Enviar Mensagem"
 														 icon="pi pi-send"
-														 action="#{sqsController.enviarMensagem}"
+														 action="#{sqsProducerController.enviarMensagem}"
 														 update="@form growl"
 														 process="@form"
 														 style="min-width:220px;

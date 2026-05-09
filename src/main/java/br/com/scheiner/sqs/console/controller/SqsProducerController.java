@@ -14,9 +14,9 @@ import jakarta.inject.Named;
 
 @Named
 @ViewScoped
-public class SqsController {
+public class SqsProducerController {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SqsController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqsProducerController.class);
 
     private final List<String> filas;
 
@@ -26,7 +26,7 @@ public class SqsController {
 
     private String filaSelecionada;
 
-    public SqsController(
+    public SqsProducerController(
             @Value("${app.sqs.filas}") List<String> filas,
             SqsProducerService sqsProducerService) {
 
