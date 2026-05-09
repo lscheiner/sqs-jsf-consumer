@@ -6,64 +6,140 @@
 	xmlns:p="http://primefaces.org/ui"
 	template="template/template.xhtml">
 
-
 	<ui:define name="content">
 
-<h:form>
-    <p:growl id="msgs" showDetail="true" skipDetailIfEqualsSummary="true"/>
+		<div class="card">
 
-    <h5 class="mt-0">Regular</h5>
-    <p:panel header="Header" footer="Movie Details">
-        <p class="m-0">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-            dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-    </p:panel>
+			<p:growl id="growl"
+					  showDetail="true"
+					  life="4000" />
 
-    <h5>Toggleable</h5>
-    <p:panel header="Header" toggleable="true" toggleableHeader="true" closable="true" toggleSpeed="500"
-                closeSpeed="500" widgetVar="panel">
+			<p:tabView>
 
-        <p:ajax event="close" listener="#{panelView.onClose}" update="msgs"/>
-        <p:ajax event="toggle" listener="#{panelView.onToggle}" update="msgs"/>
+				<p:tab title="Enviar Mensagem">
 
-        <p class="m-0">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-            dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </p>
+					<h:form id="formEnviar">
 
-        <f:facet name="options">
-            <p:menu>
-                <p:submenu label="Settings">
-                    <p:menuitem value="Toggle" url="#" icon="pi pi-clone" onclick="PF('panel').toggle()"/>
-                    <p:menuitem value="Remove" url="#" icon="pi pi-times" onclick="PF('panel').close()"/>
-                </p:submenu>
-            </p:menu>
-        </f:facet>
-    </p:panel>
+						<p:panel header="Enviar mensagem para fila SQS"
+								 style="max-width: 950px; margin:auto;">
 
-    <h5>Custom Toolbar</h5>
-    <p:panel id="custom">
-        <p class="m-0">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-            quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-            dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </p>
+							<div class="ui-fluid">
 
-        <f:facet name="header">
-            <i class="pi pi-ellipsis-v mr-2"></i>Header
-        </f:facet>
-        <f:facet name="actions">
-            <p:commandLink styleClass="ui-panel-titlebar-icon ui-corner-all ui-state-default">
-                    <h:outputText styleClass="ui-icon pi pi-question"/>
-            </p:commandLink>
-            <p:commandLink styleClass="ui-panel-titlebar-icon ui-corner-all ui-state-default">
-                <h:outputText styleClass="ui-icon pi pi-star"/>
-            </p:commandLink>
-        </f:facet>
-    </p:panel>
-</h:form>
+								<div style="margin-bottom:1.5rem;">
+
+									<p:outputLabel for="fila"
+												   value="Fila"
+												   style="font-weight:600;" />
+
+									<p:selectOneMenu id="fila"
+													 value="#{sqsController.filaSelecionada}"
+													 required="true"
+													 requiredMessage="Selecione uma fila."
+													 style="margin-top:.5rem; width:100%;">
+
+										<f:selectItem itemLabel="Selecione uma fila"
+													  itemValue="#{null}"
+													  noSelectionOption="true" />
+
+										<f:selectItems value="#{sqsController.filas}" />
+
+									</p:selectOneMenu>
+
+									<p:message for="fila"
+											   display="text" />
+
+								</div>
+
+								<div style="margin-bottom:1rem;">
+
+									<p:outputLabel for="mensagem"
+												   value="Payload da mensagem"
+												   style="font-weight:600;" />
+
+									<p:inputTextarea id="mensagem"
+													 value="#{sqsController.payload}"
+													 rows="18"
+													 autoResize="false"
+													 maxlength="10000"
+													 counter="contador"
+													 counterTemplate="{0} caracteres restantes"
+													 placeholder="Digite o payload JSON da mensagem..."
+													 style="margin-top:.5rem;
+													 		font-family:monospace;
+													 		font-size:.95rem;" />
+
+								</div>
+
+								<div style="display:flex;
+											justify-content:space-between;
+											align-items:center;
+											margin-top:1.2rem;
+											flex-wrap:wrap;
+											gap:1rem;">
+
+									<h:outputText id="contador"
+												  style="color:var(--text-color-secondary);" />
+
+									<div style="display:flex;
+												align-items:center;
+												gap:.75rem;">
+
+										<p:commandButton value="Limpar"
+														 icon="pi pi-trash"
+														 outlined="true"
+														 process="@this"
+														 update="@form"
+														 action="#{sqsController.limpar}"
+														 styleClass="ui-button-flat" />
+
+										<p:commandButton value="Enviar Mensagem"
+														 icon="pi pi-send"
+														 action="#{sqsController.enviarMensagem}"
+														 update="@form growl"
+														 process="@form"
+														 style="min-width:220px;
+														 		font-weight:600;" />
+
+									</div>
+
+								</div>
+
+							</div>
+
+						</p:panel>
+
+					</h:form>
+
+				</p:tab>
+
+				<p:tab title="Consumir mensagens">
+
+					<p:panel header="Mensagens consumidas">
+
+						<div style="text-align:center;
+									padding:3rem 2rem;">
+
+							<i class="pi pi-inbox"
+							   style="font-size:3rem;
+							   		  color:var(--text-color-secondary);" />
+
+							<div style="margin-top:1rem;
+										font-size:1.1rem;
+										color:var(--text-color-secondary);">
+
+								Nenhuma mensagem encontrada.
+
+							</div>
+
+						</div>
+
+					</p:panel>
+
+				</p:tab>
+
+			</p:tabView>
+
+		</div>
+
 	</ui:define>
 </ui:composition>
