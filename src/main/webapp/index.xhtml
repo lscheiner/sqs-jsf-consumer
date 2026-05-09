@@ -11,7 +11,16 @@
 
 			<p:growl id="growl" showDetail="true" life="4000" />
 
-			<p:tabView>
+<h:form id="formAtualizar">
+
+    <p:commandButton value="Atualizar filas"
+                     icon="pi pi-refresh"
+                     update=":tabView"
+                     process="@this" />
+
+</h:form>
+
+			<p:tabView id="tabView">
 
 				<p:tab title="Enviar Mensagem">
 
