@@ -35,6 +35,8 @@
 													 value="#{sqsController.filaSelecionada}"
 													 required="true"
 													 requiredMessage="Selecione uma fila."
+													 filter="true"
+													 filterMatchMode="contains"
 													 style="margin-top:.5rem; width:100%;">
 
 										<f:selectItem itemLabel="Selecione uma fila"
@@ -92,7 +94,8 @@
 														 action="#{sqsController.limpar}"
 														 styleClass="ui-button-flat" />
 
-										<p:commandButton value="Enviar Mensagem"
+										<p:commandButton id="btnEnviar"
+														 value="Enviar Mensagem"
 														 icon="pi pi-send"
 														 action="#{sqsController.enviarMensagem}"
 														 update="@form growl"

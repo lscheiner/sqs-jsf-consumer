@@ -1,0 +1,7 @@
+{
+  "QueueName": "pedido-criado",
+  "Attributes": {
+    "VisibilityTimeout": "10",
+    "MessageRetentionPeriod": "604800"
+  }
+}
