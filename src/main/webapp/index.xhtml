@@ -10,9 +10,7 @@
 
 		<div class="card">
 
-			<p:growl id="growl"
-					  showDetail="true"
-					  life="4000" />
+			<p:growl id="growl" showDetail="true" life="4000" />
 
 			<p:tabView>
 
@@ -46,9 +44,6 @@
 										<f:selectItems value="#{sqsController.filas}" />
 
 									</p:selectOneMenu>
-
-									<p:message for="fila"
-											   display="text" />
 
 								</div>
 
@@ -115,34 +110,151 @@
 
 				</p:tab>
 
-				<p:tab title="Consumir mensagens">
+<p:tab title="Consumir mensagens">
 
-					<p:panel header="Mensagens consumidas">
+    <h:form id="formConsumir">
+    
+     <p:growl id="growl" showDetail="true" life="4000" />
+    
 
-						<div style="text-align:center;
-									padding:3rem 2rem;">
+        <p:panel header="Visualizar mensagens da fila">
 
-							<i class="pi pi-inbox"
-							   style="font-size:3rem;
-							   		  color:var(--text-color-secondary);" />
+            <div class="ui-fluid">
 
-							<div style="margin-top:1rem;
-										font-size:1.1rem;
-										color:var(--text-color-secondary);">
+                <div style="display:flex;
+                            gap:1rem;
+                            align-items:end;
+                            margin-bottom:1.5rem;">
 
-								Nenhuma mensagem encontrada.
+                    <div style="flex:1;">
 
-							</div>
+                        <p:outputLabel for="filaConsumo"
+                                       value="Fila"
+                                       style="font-weight:600;" />
 
-						</div>
+                        <p:selectOneMenu id="filaConsumo"
+                                         value="#{sqsConsumerController.filaSelecionada}"
+                                         required="true"
+										 requiredMessage="Selecione uma fila."
+                                         filter="true"
+                                         filterMatchMode="contains"
+                                         style="margin-top:.5rem; width:100%;">
 
-					</p:panel>
+                            <f:selectItem itemLabel="Selecione uma fila"
+                                          itemValue="#{null}"
+                                          noSelectionOption="true" />
 
-				</p:tab>
+                            <f:selectItems value="#{sqsConsumerController.filas}" />
+
+                        </p:selectOneMenu>
+
+                    </div>
+
+                    <div style="width:140px;">
+
+                        <p:outputLabel for="quantidade"
+                                       value="Quantidade"
+                                       style="font-weight:600;" />
+
+                        <p:inputNumber id="quantidade"
+                                       value="#{sqsConsumerController.quantidadeMensagens}"
+                                       minValue="1"
+                                       maxValue="10"
+                                       decimalPlaces="0"
+                                       style="margin-top:.5rem;" />
+
+                    </div>
+
+                    <div>
+
+                        <p:commandButton value="Buscar"
+                                         icon="pi pi-search"
+                                         action="#{sqsConsumerController.buscarMensagens}"
+                                         update="@form growl"
+                                         process="@form"
+                                         style="height:42px;
+                                                min-width:140px;
+                                                font-weight:600;" />
+
+                    </div>
+
+                </div>
+
+                <p:dataTable id="tabelaMensagens"
+                             value="#{sqsConsumerController.mensagens}"
+                             var="mensagem"
+                             emptyMessage="Nenhuma mensagem encontrada"
+                             stripedRows="true"
+                             responsiveLayout="scroll">
+
+                    <p:column headerText="Message ID">
+
+                        <span style="font-family:monospace;
+                                     font-size:.95rem;">
+                            #{mensagem.messageId()}
+                        </span>
+
+                    </p:column>
+
+                    <p:column headerText="Ações"
+                              style="width:110px;
+                                     text-align:center;">
+
+                        <p:commandButton icon="pi pi-eye"
+                                         title="Visualizar mensagem"
+                                         rounded="true"
+                                         process="@this"
+                                         update=":dialogMensagemForm"
+                                         oncomplete="PF('dialogMensagemWidget').show()"
+                                         action="#{sqsConsumerController.visualizarMensagem(mensagem)}" />
+
+                    </p:column>
+
+                </p:dataTable>
+
+            </div>
+
+        </p:panel>
+
+    </h:form>
+
+</p:tab>
 
 			</p:tabView>
 
 		</div>
 
 	</ui:define>
+	
+	
+	<ui:define name="dialogs">
+
+    <h:form id="dialogMensagemForm">
+
+        <p:dialog id="dialogMensagem"
+                  widgetVar="dialogMensagemWidget"
+                  header="Conteúdo da mensagem"
+                  modal="true"
+                  width="900"
+                  resizable="false" 
+                  responsive="true"
+                  fitViewport="true">
+
+	<pre style="white-space:pre-wrap;
+            word-break:break-word;
+            max-height:500px;
+            overflow:auto;
+            background:#1e1e1e;
+            color:#dcdcdc;
+            padding:1rem;
+            border-radius:8px;
+            font-size:.9rem;">
+#{sqsConsumerController.conteudoMensagem}
+            </pre>
+
+        </p:dialog>
+
+    </h:form>
+
+</ui:define>
 </ui:composition>
