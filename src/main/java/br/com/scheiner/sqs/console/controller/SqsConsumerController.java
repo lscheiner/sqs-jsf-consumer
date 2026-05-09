@@ -3,7 +3,7 @@ package br.com.scheiner.sqs.console.controller;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.com.scheiner.sqs.console.consumer.SqsConsumerService;
+import br.com.scheiner.sqs.console.service.SqsConsumerService;
 import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;

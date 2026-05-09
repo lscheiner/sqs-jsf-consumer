@@ -4,20 +4,20 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import software.amazon.awssdk.services.sqs.SqsClient;
+import br.com.scheiner.sqs.console.config.SqsClientProvider;
 
 @Service
 public class SqsQueueService {
 
-    private final SqsClient sqsClient;
+    private final SqsClientProvider sqsClientProvider;
 
-    public SqsQueueService(SqsClient sqsClient) {
-        this.sqsClient = sqsClient;
+    public SqsQueueService(SqsClientProvider sqsClientProvider) {
+        this.sqsClientProvider = sqsClientProvider;
     }
 
     public List<String> listarFilas() {
 
-        return sqsClient.listQueues().queueUrls()
+        return sqsClientProvider.getClient().listQueues().queueUrls()
                 .stream()
                 .map(this::extrairNomeFila)
                 .sorted()

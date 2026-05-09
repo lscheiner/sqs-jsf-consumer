@@ -5,7 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.com.scheiner.sqs.console.producer.SqsProducerService;
+import br.com.scheiner.sqs.console.service.SqsProducerService;
 import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
