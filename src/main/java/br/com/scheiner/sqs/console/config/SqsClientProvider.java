@@ -16,20 +16,20 @@ public class SqsClientProvider {
 
     public static final String ACCOUNT_ID = "000000000000";
 
-    private volatile String region;
+    private final AtomicReference<Region> regionRef = new AtomicReference<>();
 
-    private volatile String endpoint;
+    private final AtomicReference<String> endpointRef = new AtomicReference<>();
 
-    private final AtomicReference<SqsClient> clientRef =   new AtomicReference<>();
+    private final AtomicReference<SqsClient> clientRef = new AtomicReference<>();
 
     public SqsClientProvider(
             @Value("${aws.region}") String region,
             @Value("${aws.sqs.endpoint}") String endpoint) {
 
-        reconfigurar(endpoint, region);
+        reconfigurar(endpoint, Region.of(region));
     }
 
-    public void reconfigurar(String endpoint, String region) {
+    public void reconfigurar(String endpoint, Region region) {
 
         validar(endpoint, region);
 
@@ -37,19 +37,19 @@ public class SqsClientProvider {
 
         var antigo = clientRef.getAndSet(novoClient);
 
-        this.endpoint = endpoint;
-        this.region = region;
+        endpointRef.set(endpoint);
+        regionRef.set(region);
 
         if (antigo != null) {
             antigo.close();
         }
     }
 
-    private SqsClient criarClient(String endpoint, String region) {
+    private SqsClient criarClient(String endpoint, Region region) {
 
         return SqsClient.builder()
                 .endpointOverride(URI.create(endpoint))
-                .region(Region.of(region))
+                .region(region)
                 .credentialsProvider(
                         StaticCredentialsProvider.create(
                                 AwsBasicCredentials.create("test", "test")
@@ -58,30 +58,34 @@ public class SqsClientProvider {
                 .build();
     }
 
-    private void validar(String endpoint, String region) {
+    private void validar(String endpoint, Region region) {
 
         if (endpoint == null || endpoint.isBlank()) {
             throw new IllegalArgumentException("Endpoint inválido");
         }
 
-        if (region == null || region.isBlank()) {
+        if (region == null) {
             throw new IllegalArgumentException("Region inválida");
         }
     }
-    
+
     public String montarQueueUrl(String fila) {
-        return "%s/%s/%s".formatted(endpoint, ACCOUNT_ID, fila);
+
+        return "%s/%s/%s".formatted(
+                endpointRef.get(),
+                ACCOUNT_ID,
+                fila);
     }
 
     public SqsClient getClient() {
         return clientRef.get();
     }
 
-    public String getRegion() {
-        return region;
+    public Region getRegion() {
+        return regionRef.get();
     }
 
     public String getEndpoint() {
-        return endpoint;
+        return endpointRef.get();
     }
 }
