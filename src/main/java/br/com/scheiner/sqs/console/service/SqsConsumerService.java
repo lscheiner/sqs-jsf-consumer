@@ -30,6 +30,7 @@ public class SqsConsumerService {
                         .messageSystemAttributeNames(
                                 MessageSystemAttributeName.APPROXIMATE_RECEIVE_COUNT
                          )
+                        .messageAttributeNames("All")
                         .build();
 
         return this.sqsClientProvider.getClient().receiveMessage(request).messages();

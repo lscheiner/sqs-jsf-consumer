@@ -2,15 +2,19 @@ package br.com.scheiner.sqs.console.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import br.com.scheiner.sqs.console.service.SqsConsumerService;
 import br.com.scheiner.sqs.console.service.SqsQueueService;
+import br.com.scheiner.sqs.console.utils.JsonUtils;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.MessageSystemAttributeName;
 
 @Named
@@ -19,6 +23,8 @@ public class SqsConsumerController  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsConsumerController.class);
 	
+    private static final int PAYLOAD_PREVIEW_LENGTH = 120;
+    
     private final SqsConsumerService sqsConsumerService;
     
     private final SqsQueueService sqsQueueService;
@@ -30,6 +36,8 @@ public class SqsConsumerController  {
     private List<Message> mensagens;
 
     private String conteudoMensagem;
+    
+    private Map<String, MessageAttributeValue> messageAttributes; 
 
     public SqsConsumerController(
     		SqsQueueService sqsQueueService,
@@ -50,7 +58,20 @@ public class SqsConsumerController  {
     }
 
     public void visualizarMensagem(Message mensagem) {
-        this.conteudoMensagem = mensagem.body();
+        this.conteudoMensagem = JsonUtils.prettyPrint(mensagem.body());
+        this.messageAttributes = mensagem.messageAttributes();
+    }
+
+
+    public String payloadPreview(Message mensagem) {
+
+        return Optional.ofNullable(mensagem.body())
+                .map(body -> body.replaceAll("\\s+", " ").trim())
+                .filter(body -> !body.isBlank())
+                .map(body -> body.length() > PAYLOAD_PREVIEW_LENGTH
+                        ? body.substring(0, PAYLOAD_PREVIEW_LENGTH).concat("...")
+                        : body)
+                .orElse("");
     }
 
 	public List<String> getFilas() {
@@ -85,5 +106,8 @@ public class SqsConsumerController  {
 
     public String getConteudoMensagem() {
         return conteudoMensagem;
+    }
+    public Map<String, MessageAttributeValue> getMessageAttributes() {
+        return messageAttributes;
     }
 }
