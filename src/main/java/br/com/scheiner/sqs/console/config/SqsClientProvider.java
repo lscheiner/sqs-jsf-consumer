@@ -76,6 +76,10 @@ public class SqsClientProvider {
                 ACCOUNT_ID,
                 fila);
     }
+    
+    public String extrairNomeFila(String queueUrl) {
+        return queueUrl.substring(queueUrl.lastIndexOf("/") + 1);
+    }
 
     public SqsClient getClient() {
         return clientRef.get();

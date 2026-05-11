@@ -8,13 +8,12 @@ import org.slf4j.LoggerFactory;
 import br.com.scheiner.sqs.console.service.SqsProducerService;
 import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 
 @Named
 @ViewScoped
-public class SqsProducerController {
+public class SqsProducerController implements SqsController  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsProducerController.class);
 
@@ -44,8 +43,8 @@ public class SqsProducerController {
         sqsProducerService.enviarMensagem( filaSelecionada, payload);
         
         LOGGER.info("Mensagem enviada com sucesso para fila [{}]", filaSelecionada);
-
-        FacesContext.getCurrentInstance().addMessage(null,new FacesMessage(FacesMessage.SEVERITY_INFO,"Sucesso","Mensagem enviada para fila SQS."));
+        
+        adicionarMensagem(FacesMessage.SEVERITY_INFO,"Sucesso","Mensagem enviada para fila SQS.");
     }
 
     public void limpar() {
@@ -54,9 +53,15 @@ public class SqsProducerController {
         filaSelecionada = null;
     }
 
-    public List<String> getFilas() {
-        return sqsQueueService.listarFilas();
-    }
+	public List<String> getFilas() {
+
+		try {
+			return sqsQueueService.listarFilas();
+		} catch (Exception e) {
+			LOGGER.error("Erro carregando filas", e);
+		}
+		return List.of();
+	}
 
     public String getPayload() {
         return payload;

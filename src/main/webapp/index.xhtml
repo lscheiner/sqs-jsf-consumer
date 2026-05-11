@@ -13,17 +13,19 @@
 
 			<h:form>
 				<p:contextMenu>
-					<p:menuitem value="Atualizar filas" process="@this"	update=":tabView" icon="pi pi-refresh" resetValues="true"/>
+					<p:menuitem value="Atualizar filas" process="@this"
+						update=":tabView" icon="pi pi-refresh" resetValues="true" />
 				</p:contextMenu>
 			</h:form>
 
-			<p:tabView id="tabView">
+			<p:tabView id="tabView" widgetVar="tabViewWidget">
 
 				<p:tab title="Enviar Mensagem">
 
 					<h:form id="formEnviar">
 
-						<p:panel header="Enviar mensagem para fila SQS"	style="max-width: 950px; margin:auto;">
+						<p:panel header="Enviar mensagem para fila SQS"
+							style="max-width: 950px; margin:auto;">
 
 							<div class="ui-fluid">
 
@@ -57,14 +59,15 @@
 										counterTemplate="{0} caracteres restantes"
 										placeholder="Digite o payload JSON da mensagem..."
 										required="true"
-                                        requiredMessage="Informe o payload da mensagem."
+										requiredMessage="Informe o payload da mensagem."
 										style="margin-top:.5rem;
 													 		font-family:monospace;
 													 		font-size:.95rem;" />
 
 								</div>
 
-								<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+								<div
+									style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem;">
 
 									<h:outputText id="contador"
 										style="color:var(--text-color-secondary);" />
@@ -107,7 +110,8 @@
 
 							<div class="ui-fluid">
 
-								<div style="display: flex; gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
+								<div
+									style="display: flex; gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
 
 									<div style="flex: 1;">
 
@@ -167,10 +171,8 @@
 										style="width:110px;
                                      text-align:center;">
 
-										<p:commandButton icon="pi pi-eye" 
-										    title="Visualizar mensagem"
-											rounded="true" process="@this" 
-											update=":dialogMensagemForm"
+										<p:commandButton icon="pi pi-eye" title="Visualizar mensagem"
+											rounded="true" process="@this" update=":dialogMensagemForm"
 											oncomplete="PF('dialogMensagemWidget').show()"
 											action="#{sqsConsumerController.visualizarMensagem(mensagem)}" />
 									</p:column>
@@ -182,6 +184,162 @@
 					</h:form>
 
 				</p:tab>
+
+				<p:tab title="Administração">
+
+					<p:tabView>
+
+						<p:tab title="Configuração">
+
+							<h:form id="formAdminConfig">
+
+								<p:panel header="Configuração do SQS Client" style="max-width: 950px; margin:auto;">
+
+									<div class="ui-fluid">
+
+										<div style="margin-bottom: 1.5rem;">
+
+											<p:outputLabel for="endpoint" value="Endpoint" style="font-weight:600;" />
+
+											<p:inputText id="endpoint"
+												value="#{sqsAdminController.endpoint}"
+												placeholder="http://localhost:4566"
+												style="margin-top:.5rem; font-family:monospace;" />
+
+										</div>
+
+										<div style="margin-bottom: 1.5rem;">
+
+											<p:outputLabel for="regiao" value="Região"	style="font-weight:600;" />
+
+											<p:selectOneMenu id="regiao"
+												value="#{sqsAdminController.region}" filter="true"
+												filterMatchMode="contains"
+												style="margin-top:.5rem; width:100%;">
+
+												<f:selectItems value="#{sqsAdminController.regions}" />
+
+											</p:selectOneMenu>
+
+										</div>
+
+										<div
+											style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding: 1rem; border: 1px solid var(--surface-border); border-radius: 8px;">
+
+											<div style="display: flex; align-items: center; gap: .75rem;">
+
+												<p:tag
+													value="#{sqsAdminController.connected ? 'Conectado' : 'Desconectado'}"
+													severity="#{sqsAdminController.connected ? 'success' : 'danger'}" />
+
+												<span
+													style="font-family: monospace; color: var(--text-color-secondary);">
+
+													#{sqsAdminController.endpointAtual} </span>
+
+											</div>
+
+											<div style="display: flex; align-items: center; gap: .5rem;">
+
+												<span style="font-size: .9rem; color: var(--text-color-secondary);">
+
+													Região: </span> <strong style="font-family: monospace;">
+
+													#{sqsAdminController.region} </strong>
+
+											</div>
+
+										</div>
+
+										<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+
+											<div></div>
+
+											<div style="display: flex; align-items: center; gap: .75rem;">
+
+												<p:commandButton value="Testar conexão" icon="pi pi-link"
+													process="@form" update=":growl"
+													action="#{sqsAdminController.testarConexao}"
+													style="min-width:180px;  font-weight:600;" />
+
+												<p:commandButton value="Aplicar" icon="pi pi-check"
+													process="@form" update=":growl :tabView"
+													action="#{sqsAdminController.aplicarConfiguracao}"
+													oncomplete="PF('tabViewWidget').select(2)"
+													style="min-width:180px;  font-weight:600;" />
+
+											</div>
+
+										</div>
+
+									</div>
+
+								</p:panel>
+
+							</h:form>
+
+						</p:tab>
+
+
+						<p:tab title="Purge de filas">
+
+							<h:form id="formAdminPurge">
+
+								<p:panel header="Purge de filas"
+									style="max-width: 950px; margin:auto;">
+
+									<div class="ui-fluid">
+
+										<div
+											style="display: flex; gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
+
+											<div style="flex: 1;">
+
+												<p:outputLabel for="filaPurge" value="Fila"
+													style="font-weight:600;" />
+
+												<p:selectOneMenu id="filaPurge"
+													value="#{sqsAdminController.filaSelecionada}"
+													required="true" requiredMessage="Selecione uma fila."
+													filter="true" filterMatchMode="contains"
+													style="margin-top:.5rem;  width:100%;">
+
+													<f:selectItem itemLabel="Selecione uma fila"
+														itemValue="#{null}" noSelectionOption="true" />
+
+													<f:selectItems value="#{sqsAdminController.filas}" />
+
+												</p:selectOneMenu>
+
+											</div>
+
+											<div>
+
+												<p:commandButton value="Purge" icon="pi pi-trash"
+													styleClass="ui-button-danger"
+													action="#{sqsAdminController.purgeFila}" process="@form"
+													update="@form :growl"
+													style="height:42px; min-width:140px; font-weight:600;" />
+
+											</div>
+										</div>
+
+										<p:staticMessage severity="warn" summary="Atenção"
+											detail="O purge remove todas as mensagens da fila."
+											style="width:100%;      margin-top:1rem;" />
+
+									</div>
+
+								</p:panel>
+
+							</h:form>
+
+						</p:tab>
+
+					</p:tabView>
+
+				</p:tab>
+
 
 			</p:tabView>
 
@@ -200,7 +358,7 @@
 
 				<pre
 					style="white-space: pre-wrap; word-break: break-word; max-height: 500px; overflow: auto; background: #1e1e1e; color: #dcdcdc; padding: 1rem; border-radius: 8px; font-size: .9rem;">
-#{sqsConsumerController.conteudoMensagem}
+					#{sqsConsumerController.conteudoMensagem}
             </pre>
 
 			</p:dialog>

@@ -3,6 +3,9 @@ package br.com.scheiner.sqs.console.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import br.com.scheiner.sqs.console.service.SqsConsumerService;
 import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.view.ViewScoped;
@@ -13,6 +16,8 @@ import software.amazon.awssdk.services.sqs.model.Message;
 @ViewScoped
 public class SqsConsumerController  {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqsConsumerController.class);
+	
     private final SqsConsumerService sqsConsumerService;
     
     private final SqsQueueService sqsQueueService;
@@ -43,9 +48,15 @@ public class SqsConsumerController  {
         this.conteudoMensagem = mensagem.body();
     }
 
-    public List<String> getFilas() {
-        return sqsQueueService.listarFilas();
-    }
+	public List<String> getFilas() {
+
+		try {
+			return sqsQueueService.listarFilas();
+		} catch (Exception e) {
+			LOGGER.error("Erro carregando filas", e);
+		}
+		return List.of();
+	}
 
     public String getFilaSelecionada() {
         return filaSelecionada;

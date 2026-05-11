@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import br.com.scheiner.sqs.console.config.SqsClientProvider;
+import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
 
 @Service
 public class SqsQueueService {
@@ -19,12 +20,19 @@ public class SqsQueueService {
 
         return sqsClientProvider.getClient().listQueues().queueUrls()
                 .stream()
-                .map(this::extrairNomeFila)
+                .map(sqsClientProvider::extrairNomeFila)
                 .sorted()
                 .toList();
     }
+    
+    public void purgeFila(String fila) {
 
-    private String extrairNomeFila(String queueUrl) {
-        return queueUrl.substring(queueUrl.lastIndexOf("/") + 1);
+    	 final var request = PurgeQueueRequest.builder()
+                 .queueUrl(sqsClientProvider.montarQueueUrl(fila))
+                 .build();
+    	 
+         this.sqsClientProvider.getClient().purgeQueue(request);
     }
+
+   
 }
