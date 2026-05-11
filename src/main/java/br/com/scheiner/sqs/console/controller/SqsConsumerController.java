@@ -11,6 +11,7 @@ import br.com.scheiner.sqs.console.service.SqsQueueService;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.MessageSystemAttributeName;
 
 @Named
 @ViewScoped
@@ -42,6 +43,10 @@ public class SqsConsumerController  {
 
     public void buscarMensagens() {
         this.mensagens = this.sqsConsumerService.consumirMensagens(this.filaSelecionada, this.quantidadeMensagens);
+    }
+    
+    public String receiveCount(Message message) {
+        return message.attributes().get(MessageSystemAttributeName.APPROXIMATE_RECEIVE_COUNT);
     }
 
     public void visualizarMensagem(Message mensagem) {

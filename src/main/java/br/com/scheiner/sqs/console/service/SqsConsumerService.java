@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.scheiner.sqs.console.config.SqsClientProvider;
 import software.amazon.awssdk.services.sqs.model.Message;
+import software.amazon.awssdk.services.sqs.model.MessageSystemAttributeName;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 
 @Service
@@ -26,6 +27,9 @@ public class SqsConsumerService {
                         .maxNumberOfMessages(quantidadeMensagens)
                         .visibilityTimeout(1)
                         .waitTimeSeconds(1)
+                        .messageSystemAttributeNames(
+                                MessageSystemAttributeName.APPROXIMATE_RECEIVE_COUNT
+                         )
                         .build();
 
         return this.sqsClientProvider.getClient().receiveMessage(request).messages();
