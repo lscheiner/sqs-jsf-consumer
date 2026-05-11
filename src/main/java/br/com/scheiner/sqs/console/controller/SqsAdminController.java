@@ -57,7 +57,7 @@ public class SqsAdminController implements SqsController {
 	public void testarConexao() {
 
 		try {
-			this.sqsClientProvider.getClient().listQueues();
+			this.sqsQueueService.listarFilas();
 			this.connected = true;
 			adicionarMensagem(FacesMessage.SEVERITY_INFO, "Conexão OK", "Conexão realizada com sucesso.");
 
