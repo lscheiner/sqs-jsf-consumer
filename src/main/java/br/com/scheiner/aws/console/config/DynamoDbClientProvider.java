@@ -10,20 +10,20 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.ListTablesRequest;
 
 @Component
-public class SqsClientProvider implements AwsProvider {
+public class DynamoDbClientProvider implements AwsProvider {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(SqsClientProvider.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDbClientProvider.class);
 
-    public static final String ACCOUNT_ID = "000000000000";
-
-    private final AtomicReference<SqsClient> clientRef = new AtomicReference<>();
+    private final AtomicReference<DynamoDbClient> clientRef = new AtomicReference<>();
     
     private final AwsConfiguration awsConfiguration;
 
-    public SqsClientProvider(AwsConfiguration awsConfiguration ) {
+    public DynamoDbClientProvider(AwsConfiguration awsConfiguration) {
+
     	this.awsConfiguration = awsConfiguration;
     	this.reconfigurar();
     }
@@ -31,53 +31,46 @@ public class SqsClientProvider implements AwsProvider {
     @Override
     public void reconfigurar() {
 
-        var novoClient = criarClient(this.awsConfiguration.getEndpoint(), this.awsConfiguration.getRegion());
-
+        var novoClient = criarClient(awsConfiguration.getEndpoint(), awsConfiguration.getRegion());
         var antigo = clientRef.getAndSet(novoClient);
 
         if (antigo != null) {
             antigo.close();
         }
     }
-
+    
     @Override
     public boolean isConectado() {
         try {
-            getClient().listQueues();
+            getClient().listTables(
+                    ListTablesRequest.builder()
+                            .limit(1)
+                            .build()
+            );
             return true;
         } catch (Exception ex) {
-        	LOGGER.error("Erro conectando no SQS" ,ex );
+            LOGGER.error("Erro conectando no DynamoDB", ex);
             return false;
         }
     }
 
-    private SqsClient criarClient(String endpoint, Region region) {
+    private DynamoDbClient criarClient(String endpoint, Region region) {
 
-        return SqsClient.builder()
+        return DynamoDbClient.builder()
                 .endpointOverride(URI.create(endpoint))
                 .region(region)
                 .credentialsProvider(
                         StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create("test", "test")
+                                AwsBasicCredentials.create(
+                                        "test",
+                                        "test"
+                                )
                         )
                 )
                 .build();
     }
 
-    public String montarQueueUrl(String fila) {
-
-        return "%s/%s/%s".formatted(
-        		this.awsConfiguration.getEndpoint(),
-                ACCOUNT_ID,
-                fila);
-    }
-    
-    public String extrairNomeFila(String queueUrl) {
-        return queueUrl.substring(queueUrl.lastIndexOf("/") + 1);
-    }
-
-    public SqsClient getClient() {
+    public DynamoDbClient getClient() {
         return clientRef.get();
     }
-
 }

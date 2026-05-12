@@ -7,26 +7,87 @@
 	xmlns:pe="http://primefaces.org/ui/extensions"
 	template="template/template.xhtml">
 
-	<ui:define name="content">
+<ui:define name="content">
 
-		<div class="page-header">
-		
-		    <div class="page-title">
-		        Dynamodb
-		    </div>
-		
-		    <div class="page-subtitle">
-		        Consulta e administração de tabelas DynamoDB
-		    </div>
-		
-		</div>
+    <div class="page-header">
 
-		<div class="card">
+        <div class="page-title">
+            DynamoDB
+        </div>
 
+        <div class="page-subtitle">
+            Consulta e administração de tabelas DynamoDB
+        </div>
 
-		</div>
+    </div>
 
-	</ui:define>
+    <h:form id="formDynamo">
+
+        <p:panel header="Selecionar tabela"  style="max-width: 950px; margin:auto;">
+
+            <div class="ui-fluid">
+
+                <div style="display:flex;
+                            gap:1rem;
+                            align-items:end;
+                            margin-bottom:1.5rem;">
+
+                    <div style="flex:1;">
+
+                        <p:outputLabel for="tabela"
+                                       value="Tabela"
+                                       style="font-weight:600;" />
+
+						<p:selectOneMenu id="tabela"
+										value="#{dynamoDbController.tabelaSelecionada}"
+										required="true" requiredMessage="Selecione uma tabela."
+										filter="true" filterMatchMode="contains"
+										style="margin-top:.5rem; width:100%;">
+
+									<f:selectItem itemLabel="Selecione uma tabela"  itemValue="#{null}"
+                                          noSelectionOption="true" />
+
+										<f:selectItems value="#{dynamoDbController.tabelas}" />
+
+						</p:selectOneMenu>
+
+                    </div>
+                    <div>
+
+                        <p:commandButton value="Atualizar"
+                                         icon="pi pi-refresh"
+                                         process="@this"
+                                         update="growl @form"
+                                         action="#{dynamoDbController.atualizarTabelas}"
+                                         outlined="true"
+                                         style="height:42px;
+                                                min-width:140px;
+                                                font-weight:600;" />
+
+                    </div>
+
+                    <div>
+
+                        <p:commandButton value="Selecionar tabela"
+                                         icon="pi pi-table"
+                                         process="@form"
+                                         update="growl @form"
+                                         action="#{dynamoDbController.selecionarTabela}"
+                                         style="height:42px;
+                                                min-width:180px;
+                                                font-weight:600;" />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </p:panel>
+
+    </h:form>
+
+</ui:define>
 
 
 	<ui:define name="dialogs">

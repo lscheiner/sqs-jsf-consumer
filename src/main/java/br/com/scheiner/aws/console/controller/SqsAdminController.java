@@ -5,12 +5,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.com.scheiner.aws.console.config.SqsClientProvider;
 import br.com.scheiner.aws.console.service.SqsQueueService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
-import software.amazon.awssdk.regions.Region;
 
 @Named
 @ViewScoped
@@ -18,53 +16,12 @@ public class SqsAdminController implements SqsController {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SqsAdminController.class);
 
-	private final SqsClientProvider sqsClientProvider;
-
 	private final SqsQueueService sqsQueueService;
-
-	private String endpoint;
-
-	private String region;
-
-	private boolean connected;
 
 	private String filaSelecionada;
 
-	public SqsAdminController(SqsClientProvider sqsClientProvider, SqsQueueService sqsQueueService) {
-
-		this.sqsClientProvider = sqsClientProvider;
+	public SqsAdminController( SqsQueueService sqsQueueService) {
 		this.sqsQueueService = sqsQueueService;
-
-		this.endpoint = sqsClientProvider.getEndpoint();
-		this.region = sqsClientProvider.getRegion().id();
-
-		this.testarConexao();
-	}
-
-	public void aplicarConfiguracao() {
-
-		try {
-
-			this.sqsClientProvider.reconfigurar(endpoint, Region.of(region));
-			this.connected = true;
-			this.testarConexao();
-
-		} catch (Exception ex) {
-			this.connected = false;
-		}
-	}
-
-	public void testarConexao() {
-
-		try {
-			this.sqsQueueService.listarFilas();
-			this.connected = true;
-			adicionarMensagem(FacesMessage.SEVERITY_INFO, "Conexão OK", "Conexão realizada com sucesso.");
-
-		} catch (Exception ex) {
-			connected = false;
-			adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro de conexão", ex.getMessage());
-		}
 	}
 
 	public void purgeFila() {
@@ -72,7 +29,6 @@ public class SqsAdminController implements SqsController {
 		try {
 
 			this.sqsQueueService.purgeFila(this.filaSelecionada);
-
 			adicionarMensagem(FacesMessage.SEVERITY_INFO, "Fila limpa", "Purge executado com sucesso.");
 
 		} catch (Exception ex) {
@@ -91,39 +47,6 @@ public class SqsAdminController implements SqsController {
 		return List.of();
 	}
 
-	public List<String> getRegions() {
-
-		return Region.regions().stream().map(Region::id).sorted().toList();
-	}
-
-	public String getEndpointAtual() {
-		return sqsClientProvider.getEndpoint();
-	}
-
-	public String getEndpoint() {
-		return endpoint;
-	}
-
-	public void setEndpoint(String endpoint) {
-		this.endpoint = endpoint;
-	}
-
-	public String getRegion() {
-		return region;
-	}
-
-	public void setRegion(String region) {
-		this.region = region;
-	}
-
-	public boolean isConnected() {
-		return connected;
-	}
-
-	public void setConnected(boolean connected) {
-		this.connected = connected;
-	}
-
 	public String getFilaSelecionada() {
 		return filaSelecionada;
 	}
@@ -131,4 +54,9 @@ public class SqsAdminController implements SqsController {
 	public void setFilaSelecionada(String filaSelecionada) {
 		this.filaSelecionada = filaSelecionada;
 	}
+
+	public SqsQueueService getSqsQueueService() {
+		return sqsQueueService;
+	}
+	
 }

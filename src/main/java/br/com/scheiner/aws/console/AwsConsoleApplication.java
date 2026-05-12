@@ -6,10 +6,10 @@ import org.springframework.boot.web.server.servlet.context.ServletComponentScan;
 
 @ServletComponentScan
 @SpringBootApplication
-public class SqsConsumerApplication {
+public class AwsConsoleApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SqsConsumerApplication.class, args);
+		SpringApplication.run(AwsConsoleApplication.class, args);
 	}
 
 }

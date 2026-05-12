@@ -204,99 +204,7 @@
 
 				</p:tab>
 
-				<p:tab title="Administração">
-
-					<p:tabView>
-
-						<p:tab title="Configuração">
-
-							<h:form id="formAdminConfig">
-
-								<p:panel header="Configuração do SQS Client" style="max-width: 950px; margin:auto;">
-
-									<div class="ui-fluid">
-
-										<div style="margin-bottom: 1.5rem;">
-
-											<p:outputLabel for="endpoint" value="Endpoint" style="font-weight:600;" />
-
-											<p:inputText id="endpoint"
-												value="#{sqsAdminController.endpoint}"
-												placeholder="http://localhost:4566"
-												style="margin-top:.5rem; font-family:monospace;" />
-
-										</div>
-
-										<div style="margin-bottom: 1.5rem;">
-
-											<p:outputLabel for="regiao" value="Região"	style="font-weight:600;" />
-
-											<p:selectOneMenu id="regiao"
-												value="#{sqsAdminController.region}" filter="true"
-												filterMatchMode="contains"
-												style="margin-top:.5rem; width:100%;">
-
-												<f:selectItems value="#{sqsAdminController.regions}" />
-
-											</p:selectOneMenu>
-
-										</div>
-
-										<div
-											style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding: 1rem; border: 1px solid var(--surface-border); border-radius: 8px;">
-
-											<div style="display: flex; align-items: center; gap: .75rem;">
-
-												<p:tag
-													value="#{sqsAdminController.connected ? 'Conectado' : 'Desconectado'}"
-													severity="#{sqsAdminController.connected ? 'success' : 'danger'}" />
-													
-													<h:outputText value="#{sqsAdminController.endpointAtual}" />
-											</div>
-
-											<div style="display: flex; align-items: center; gap: .5rem;">
-
-												<span style="font-size: .9rem; color: var(--text-color-secondary);">
-
-													Região: </span> <strong style="font-family: monospace;">
-
-													<h:outputText value="#{sqsAdminController.region}" /> </strong>
-
-											</div>
-
-										</div>
-
-										<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.2rem; flex-wrap: wrap; gap: 1rem;">
-
-											<div></div>
-
-											<div style="display: flex; align-items: center; gap: .75rem;">
-
-												<p:commandButton value="Testar conexão" icon="pi pi-link"
-													process="@form" update=":growl"
-													action="#{sqsAdminController.testarConexao}"
-													style="min-width:180px;  font-weight:600;" />
-
-												<p:commandButton value="Aplicar" icon="pi pi-check"
-													process="@form" update=":growl :tabView"
-													action="#{sqsAdminController.aplicarConfiguracao}"
-													oncomplete="PF('tabViewWidget').select(2)"
-													style="min-width:180px;  font-weight:600;" />
-
-											</div>
-
-										</div>
-
-									</div>
-
-								</p:panel>
-
-							</h:form>
-
-						</p:tab>
-
-
-						<p:tab title="Purge de filas">
+				<p:tab title="Purge de filas">
 
 							<h:form id="formAdminPurge">
 
@@ -350,12 +258,6 @@
 							</h:form>
 
 						</p:tab>
-
-					</p:tabView>
-
-				</p:tab>
-
-
 			</p:tabView>
 
 		</div>
