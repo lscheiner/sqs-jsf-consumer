@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.console;
+package br.com.scheiner.aws.console;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

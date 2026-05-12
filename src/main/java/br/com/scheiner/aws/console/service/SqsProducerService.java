@@ -1,10 +1,10 @@
-package br.com.scheiner.sqs.console.service;
+package br.com.scheiner.aws.console.service;
 
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import br.com.scheiner.sqs.console.config.SqsClientProvider;
+import br.com.scheiner.aws.console.config.SqsClientProvider;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 

@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.console.config;
+package br.com.scheiner.aws.console.config;
 
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;

@@ -1,12 +1,12 @@
-package br.com.scheiner.sqs.console.controller;
+package br.com.scheiner.aws.console.controller;
 
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.com.scheiner.sqs.console.config.SqsClientProvider;
-import br.com.scheiner.sqs.console.service.SqsQueueService;
+import br.com.scheiner.aws.console.config.SqsClientProvider;
+import br.com.scheiner.aws.console.service.SqsQueueService;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;

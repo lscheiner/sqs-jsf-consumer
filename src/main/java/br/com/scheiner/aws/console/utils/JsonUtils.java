@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.console.utils;
+package br.com.scheiner.aws.console.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.console.controller;
+package br.com.scheiner.aws.console.controller;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import br.com.scheiner.sqs.console.service.SqsConsumerService;
-import br.com.scheiner.sqs.console.service.SqsQueueService;
-import br.com.scheiner.sqs.console.utils.JsonUtils;
+import br.com.scheiner.aws.console.service.SqsConsumerService;
+import br.com.scheiner.aws.console.service.SqsQueueService;
+import br.com.scheiner.aws.console.utils.JsonUtils;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
 import software.amazon.awssdk.services.sqs.model.Message;

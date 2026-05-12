@@ -1,4 +1,4 @@
-package br.com.scheiner.sqs.console.controller;
+package br.com.scheiner.aws.console.controller;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
