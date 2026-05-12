@@ -1,7 +1,11 @@
 package br.com.scheiner.aws.console.controller;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+
+import org.apache.commons.validator.routines.UrlValidator;
 
 import br.com.scheiner.aws.console.config.AwsConfiguration;
 import br.com.scheiner.aws.console.config.AwsProvider;
@@ -79,12 +83,31 @@ public class ConfigController implements SqsController {
 	            );
 	}
 	
-	public void aplicarConfiguracao() {
-		
-		this.awsConfiguration.setEndpoint(this.endpoint);
-		this.awsConfiguration.setRegion(Region.of(this.region));
-		this.awsProvider.stream().forEach(f -> f.reconfigurar());
-		this.testarConexao();
+	public void aplicarConfiguracao()  {
+
+	    try {
+	    	validarEndpoint(this.endpoint);
+	        this.awsConfiguration.setEndpoint(this.endpoint);
+	        this.awsConfiguration.setRegion(Region.of(this.region));
+	        this.awsProvider.forEach(AwsProvider::reconfigurar);
+	        this.testarConexao();
+
+	    } catch (Exception ex) {
+	    	this.endpoint = this.awsConfiguration.getEndpoint();
+	        adicionarMensagem(FacesMessage.SEVERITY_ERROR,"Endpoint inválido","Informe uma URL válida para o endpoint.");
+	    }
+	}
+	
+	private void validarEndpoint(String endpoint) {
+
+		 var validator = new UrlValidator(
+		            new String[] { "http", "https" },
+		            UrlValidator.ALLOW_LOCAL_URLS
+		    );
+
+	    if (!validator.isValid(endpoint)) {
+	        throw new IllegalArgumentException("Endpoint inválido");
+	    }
 	}
 
 }
