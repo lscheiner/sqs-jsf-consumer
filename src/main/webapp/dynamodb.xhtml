@@ -144,8 +144,7 @@
                          rows="10"
                          emptyMessage="Nenhum item encontrado para esta tabela."
                          scrollable="true"
-                         scrollWidth="100%"
-                         styleClass="dynamo-itens-table"
+                         scrollWidth="98%"
                          responsiveLayout="scroll">
 
                 <p:columns value="#{dynamoDbController.colunas}"
@@ -224,6 +223,7 @@
                         <p:commandButton value="Cancelar"
                                          type="button"
                                          outlined="true"
+                                         icon="pi pi-times"
                                          onclick="PF('dialogItemWidget').hide()" />
 
                         <p:commandButton value="Salvar"
