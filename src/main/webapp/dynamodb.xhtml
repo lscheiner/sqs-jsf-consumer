@@ -150,6 +150,7 @@
                 <p:columns value="#{dynamoDbController.colunas}"
                            var="coluna"
                            headerText="#{coluna}"
+                           sortBy="#{dynamoDbController.obterValorComparable(item[coluna])}"
                            style="width:220px; min-width:220px;">
                     <h:panelGroup layout="block" style="display:flex; align-items:center; gap:.5rem; white-space:nowrap;">
                         <h:outputText value="#{dynamoDbController.formatarValor(item[coluna])}" />

@@ -37,9 +37,9 @@ public class DynamoDbController implements SqsController {
 
 	private DynamoDbTableMetadata metadataTabela;
 
-	private List<Map<String, AttributeValue>> itensTabela = List.of();
+	private List<Map<String, AttributeValue>> itensTabela = new ArrayList<>();
 
-	private List<String> colunas = List.of();
+	private List<String> colunas = new ArrayList<>();
 
 	private String jsonItemFormulario;
 
@@ -78,12 +78,12 @@ public class DynamoDbController implements SqsController {
 		try {
 
 			this.descricaoTabela = this.dynamodbService.descreverTabela(this.tabelaSelecionada);
-
+			
 			this.metadataTabela = new DynamoDbTableMetadata(this.descricaoTabela);
 
-			this.itensTabela = this.dynamodbService.buscarItens(this.tabelaSelecionada);
+			this.itensTabela = new ArrayList<>(this.dynamodbService.buscarItens(this.tabelaSelecionada));
 
-			this.colunas = this.montarColunas(this.itensTabela);
+			this.colunas = new ArrayList<>(this.montarColunas(this.itensTabela));
 
 			this.adicionarMensagem(FacesMessage.SEVERITY_INFO, "Tabela selecionada", this.tabelaSelecionada);
 
@@ -96,6 +96,14 @@ public class DynamoDbController implements SqsController {
 			this.adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro", "Erro ao carregar detalhes da tabela.");
 		}
 	}
+
+	private void recarregarItensTabela() {
+
+		this.itensTabela = new ArrayList<>(this.dynamodbService.buscarItens(this.tabelaSelecionada));
+
+		this.colunas = new ArrayList<>(this.montarColunas(this.itensTabela));
+	}
+	
 
 	public void editarItem(Map<String, AttributeValue> item) {
 
@@ -229,9 +237,9 @@ public class DynamoDbController implements SqsController {
 
 		this.metadataTabela = null;
 
-		this.itensTabela = List.of();
+		this.itensTabela =  new ArrayList<>();
 
-		this.colunas = List.of();
+		this.colunas =  new ArrayList<>();
 
 		this.jsonItemFormulario = null;
 
@@ -267,13 +275,6 @@ public class DynamoDbController implements SqsController {
 		colunasOrdenadas.addAll(colunasEncontradas);
 
 		return colunasOrdenadas;
-	}
-
-	private void recarregarItensTabela() {
-
-		this.itensTabela = this.dynamodbService.buscarItens(this.tabelaSelecionada);
-
-		this.colunas = this.montarColunas(this.itensTabela);
 	}
 
 	private Map<String, AttributeValue> extrairChave(Map<String, AttributeValue> item) {
@@ -349,29 +350,41 @@ public class DynamoDbController implements SqsController {
 		return this.novoItem;
 	}
 
+	public Object obterValorComparable(AttributeValue valor) {
+
+	    if (valor == null) {
+	        return "";
+	    }
+
+	    if (valor.s() != null) {
+	        return valor.s();
+	    }
+
+	    if (valor.n() != null) {
+
+	        try {
+	            return Double.valueOf(valor.n());
+	        } catch (Exception e) {
+	            return valor.n();
+	        }
+	    }
+
+	    if (valor.bool() != null) {
+	        return valor.bool();
+	    }
+
+	    if (Boolean.TRUE.equals(valor.nul())) {
+	        return "";
+	    }
+
+	    return this.formatarPreviewValorComplexo(valor);
+	}
+	
 	public String formatarValor(AttributeValue valor) {
 
-		if (valor == null) {
-			return "";
-		}
+		var valorComparable = this.obterValorComparable(valor);
 
-		if (valor.s() != null) {
-			return valor.s();
-		}
-
-		if (valor.n() != null) {
-			return valor.n();
-		}
-
-		if (valor.bool() != null) {
-			return valor.bool().toString();
-		}
-
-		if (Boolean.TRUE.equals(valor.nul())) {
-			return "null";
-		}
-
-		return this.formatarPreviewValorComplexo(valor);
+		return valorComparable != null ? valorComparable.toString() : "";
 	}
 
 	public boolean isValorComplexo(AttributeValue valor) {
