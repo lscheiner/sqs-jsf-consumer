@@ -152,7 +152,20 @@
                            var="coluna"
                            headerText="#{coluna}"
                            style="width:220px; min-width:220px;">
-                    <h:outputText value="#{dynamoDbController.formatarValor(item[coluna])}" style="white-space:nowrap;" />
+                    <h:panelGroup layout="block" style="display:flex; align-items:center; gap:.5rem; white-space:nowrap;">
+                        <h:outputText value="#{dynamoDbController.formatarValor(item[coluna])}" />
+
+                        <p:commandButton icon="pi pi-eye"
+                                         title="Visualizar valor"
+                                         rounded="true"
+                                         rendered="#{dynamoDbController.isValorComplexo(item[coluna])}"
+                                         process="@this"
+                                         update=":dialogValorComplexoForm"
+                                         oncomplete="PF('dialogValorComplexoWidget').show()"
+                                         action="#{dynamoDbController.visualizarValorComplexo(item[coluna])}"
+                                         styleClass="ui-button-secondary"
+                                         style="width:2rem; height:2rem;" />
+                    </h:panelGroup>
                 </p:columns>
 
                 <p:column headerText="Ações" style="width:120px; min-width:120px; text-align:center;">
@@ -221,6 +234,30 @@
                     </div>
 
                 </div>
+
+            </p:dialog>
+
+        </h:form>
+
+        <h:form id="dialogValorComplexoForm">
+
+            <p:dialog id="dialogValorComplexo"
+                      widgetVar="dialogValorComplexoWidget"
+                      header="Visualizar valor"
+                      modal="true"
+                      responsive="true"
+                      closable="true"
+                      width="70vw"
+                      height="70vh">
+
+                <pe:codeMirror id="jsonValorComplexoViewer"
+                               value="#{dynamoDbController.jsonValorVisualizacao}"
+                               mode="javascript"
+                               theme="dracula"
+                               readonly="true"
+                               lineNumbers="true"
+                               matchBrackets="true"
+                               style="height:55vh; border:none;" />
 
             </p:dialog>
 

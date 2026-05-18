@@ -43,6 +43,8 @@ public class DynamoDbController implements SqsController {
 
     private String jsonItemFormulario;
 
+    private String jsonValorVisualizacao;
+
     private boolean novoItem;
 
     private Map<String, AttributeValue> chaveOriginalEmEdicao = new LinkedHashMap<>();
@@ -182,6 +184,7 @@ public class DynamoDbController implements SqsController {
     	this.itensTabela = List.of();
     	this.colunas = List.of();
     	this.jsonItemFormulario = null;
+    	this.jsonValorVisualizacao = null;
     	this.novoItem = false;
     	this.chaveOriginalEmEdicao = new LinkedHashMap<>();
     }
@@ -291,7 +294,20 @@ public class DynamoDbController implements SqsController {
 			return "null";
 		}
 
-		return DynamoDbJsonMapper.toJson(Map.of("valor", valor));
+		return formatarPreviewValorComplexo(valor);
+	}
+
+	public boolean isValorComplexo(AttributeValue valor) {
+		return valor != null
+				&& (valor.hasM() || valor.hasL() || valor.hasSs() || valor.hasNs() || valor.b() != null || valor.hasBs());
+	}
+
+	public void visualizarValorComplexo(AttributeValue valor) {
+		this.jsonValorVisualizacao = JsonUtils.prettyPrint(DynamoDbJsonMapper.toJson(valor));
+	}
+
+	public String getJsonValorVisualizacao() {
+		return jsonValorVisualizacao;
 	}
 
 	private AttributeValue criarValorVazioPorTipo(String tipo) {
@@ -300,5 +316,28 @@ public class DynamoDbController implements SqsController {
 		}
 
 		return AttributeValue.builder().s("").build();
+	}
+
+	private String formatarPreviewValorComplexo(AttributeValue valor) {
+		if (valor.hasM()) {
+			return "{%d campos}".formatted(valor.m().size());
+		}
+		if (valor.hasL()) {
+			return "[%d itens]".formatted(valor.l().size());
+		}
+		if (valor.hasSs()) {
+			return "[%d strings]".formatted(valor.ss().size());
+		}
+		if (valor.hasNs()) {
+			return "[%d números]".formatted(valor.ns().size());
+		}
+		if (valor.b() != null) {
+			return "[binário]";
+		}
+		if (valor.hasBs()) {
+			return "[%d binários]".formatted(valor.bs().size());
+		}
+
+		return "";
 	}
 }

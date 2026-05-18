@@ -29,6 +29,14 @@ public final class DynamoDbJsonMapper {
 		}
 	}
 
+	public static String toJson(AttributeValue valor) {
+		try {
+			return OBJECT_MAPPER.writeValueAsString(toJsonValue(valor));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Erro ao converter valor para JSON.", e);
+		}
+	}
+
 	public static Map<String, AttributeValue> fromJson(String json) throws Exception {
 		JsonNode raiz = OBJECT_MAPPER.readTree(json);
 		Map<String, AttributeValue> item = new LinkedHashMap<>();
