@@ -121,7 +121,14 @@
                  rendered="#{not empty dynamoDbController.descricaoTabela}"
                  style="max-width: 950px; margin:1.5rem auto 0 auto;">
 
-            <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+            <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-bottom:1rem;">
+                <p:commandButton value="Atualizar itens"
+                                 icon="pi pi-refresh"
+                                 process="@this"
+                                 update=":formDynamo:tabelaItens :growl"
+                                 action="#{dynamoDbController.atualizarItens}"
+                                 outlined="true" />
+
                 <p:commandButton value="Novo item"
                                  icon="pi pi-plus"
                                  process="@this"

@@ -11,16 +11,14 @@ import org.primefaces.PrimeFaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import br.com.scheiner.aws.console.model.DynamoDbTableMetadata;
 import br.com.scheiner.aws.console.service.DynamodbService;
 import br.com.scheiner.aws.console.utils.DynamoDbJsonMapper;
 import br.com.scheiner.aws.console.utils.JsonUtils;
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Named;
-import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
-import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.TableDescription;
 
 @Named
@@ -36,6 +34,8 @@ public class DynamoDbController implements SqsController {
     private String tabelaSelecionada;
 
     private TableDescription descricaoTabela;
+
+    private DynamoDbTableMetadata metadataTabela;
 
     private List<Map<String, AttributeValue>> itensTabela = List.of();
 
@@ -70,6 +70,7 @@ public class DynamoDbController implements SqsController {
     public void selecionarTabela() {
     	try {
     		this.descricaoTabela = dynamodbService.descreverTabela(this.tabelaSelecionada);
+    		this.metadataTabela = new DynamoDbTableMetadata(this.descricaoTabela);
     		this.itensTabela = dynamodbService.buscarItens(this.tabelaSelecionada);
     		this.colunas = montarColunas(this.itensTabela);
     		adicionarMensagem(FacesMessage.SEVERITY_INFO, "Tabela selecionada", this.tabelaSelecionada);
@@ -93,14 +94,14 @@ public class DynamoDbController implements SqsController {
 
     public void novoItem() {
     	Map<String, AttributeValue> itemInicial = new LinkedHashMap<>();
-    	String partitionKey = getPartitionKey();
-    	String sortKey = getSortKey();
+    	String partitionKey = metadataTabela.getPartitionKey();
+    	String sortKey = metadataTabela.getSortKey();
 
     	if (partitionKey != null) {
-    		itemInicial.put(partitionKey, criarValorVazioPorTipo(buscarTipoAtributo(partitionKey)));
+    		itemInicial.put(partitionKey, criarValorVazioPorTipo(metadataTabela.getTipoAtributo(partitionKey)));
     	}
     	if (sortKey != null) {
-    		itemInicial.put(sortKey, criarValorVazioPorTipo(buscarTipoAtributo(sortKey)));
+    		itemInicial.put(sortKey, criarValorVazioPorTipo(metadataTabela.getTipoAtributo(sortKey)));
     	}
 
     	this.jsonItemFormulario = JsonUtils.prettyPrint(DynamoDbJsonMapper.toJson(itemInicial));
@@ -144,6 +145,16 @@ public class DynamoDbController implements SqsController {
     	}
     }
 
+    public void atualizarItens() {
+    	try {
+    		recarregarItensTabela();
+    		adicionarMensagem(FacesMessage.SEVERITY_INFO, "Itens atualizados", "Itens recarregados com sucesso.");
+    	} catch (Exception e) {
+    		LOGGER.error("Erro atualizando itens da tabela {}", this.tabelaSelecionada, e);
+    		adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro", "Erro ao atualizar itens.");
+    	}
+    }
+
     public List<String> getTabelas() {
         return tabelas;
     }
@@ -167,6 +178,7 @@ public class DynamoDbController implements SqsController {
 
     private void limparDetalhesTabela() {
     	this.descricaoTabela = null;
+    	this.metadataTabela = null;
     	this.itensTabela = List.of();
     	this.colunas = List.of();
     	this.jsonItemFormulario = null;
@@ -179,8 +191,8 @@ public class DynamoDbController implements SqsController {
     	itens.forEach(item -> colunasEncontradas.addAll(item.keySet()));
 
     	List<String> colunasOrdenadas = new ArrayList<>();
-    	String partitionKey = getPartitionKey();
-    	String sortKey = getSortKey();
+    	String partitionKey = metadataTabela.getPartitionKey();
+    	String sortKey = metadataTabela.getSortKey();
 
     	if (partitionKey != null && colunasEncontradas.remove(partitionKey)) {
     		colunasOrdenadas.add(partitionKey);
@@ -201,8 +213,8 @@ public class DynamoDbController implements SqsController {
 
     private Map<String, AttributeValue> extrairChave(Map<String, AttributeValue> item) {
     	Map<String, AttributeValue> chave = new LinkedHashMap<>();
-    	String partitionKey = getPartitionKey();
-    	String sortKey = getSortKey();
+    	String partitionKey = metadataTabela.getPartitionKey();
+    	String sortKey = metadataTabela.getSortKey();
 
     	if (partitionKey != null) {
     		chave.put(partitionKey, item.get(partitionKey));
@@ -214,64 +226,20 @@ public class DynamoDbController implements SqsController {
     	return chave;
     }
 
-    private String buscarTipoAtributo(String nomeAtributo) {
-    	if (descricaoTabela == null) {
-    		return null;
-    	}
-
-    	return descricaoTabela.attributeDefinitions()
-    			.stream()
-    			.filter(atributo -> atributo.attributeName().equals(nomeAtributo))
-    			.map(atributo -> atributo.attributeTypeAsString())
-    			.findFirst()
-    			.orElse(null);
-    }
-
     public String getPartitionKey() {
-    	return buscarNomeChave(KeyType.HASH);
+    	return metadataTabela != null ? metadataTabela.getPartitionKey() : null;
     }
 
     public String getSortKey() {
-    	return buscarNomeChave(KeyType.RANGE);
+    	return metadataTabela != null ? metadataTabela.getSortKey() : null;
     }
 
     public String getTipoPartitionKey() {
-    	return buscarTipoChave(KeyType.HASH);
+    	return metadataTabela != null ? metadataTabela.getTipoPartitionKey() : null;
     }
 
     public String getTipoSortKey() {
-    	return buscarTipoChave(KeyType.RANGE);
-    }
-
-    private String buscarNomeChave(KeyType tipoChave) {
-    	if (descricaoTabela == null) {
-    		return null;
-    	}
-
-    	return descricaoTabela.keySchema()
-    			.stream()
-    			.filter(chave -> chave.keyType() == tipoChave)
-    			.map(KeySchemaElement::attributeName)
-    			.findFirst()
-    			.orElse(null);
-    }
-
-    private String buscarTipoChave(KeyType tipoChave) {
-    	if (descricaoTabela == null) {
-    		return null;
-    	}
-
-    	String nomeChave = buscarNomeChave(tipoChave);
-    	if (nomeChave == null) {
-    		return null;
-    	}
-
-    	return descricaoTabela.attributeDefinitions()
-    			.stream()
-    			.filter(atributo -> atributo.attributeName().equals(nomeChave))
-    			.map(AttributeDefinition::attributeTypeAsString)
-    			.findFirst()
-    			.orElse(null);
+    	return metadataTabela != null ? metadataTabela.getTipoSortKey() : null;
     }
 
     public TableDescription getDescricaoTabela() {
@@ -279,11 +247,11 @@ public class DynamoDbController implements SqsController {
 	}
 
 	public Long getQuantidadeItens() {
-		return descricaoTabela != null ? descricaoTabela.itemCount() : null;
+		return metadataTabela != null ? metadataTabela.getQuantidadeItens() : null;
 	}
 
 	public String getStatusTabela() {
-		return descricaoTabela != null ? descricaoTabela.tableStatusAsString() : null;
+		return metadataTabela != null ? metadataTabela.getStatusTabela() : null;
 	}
 
 	public List<Map<String, AttributeValue>> getItensTabela() {
