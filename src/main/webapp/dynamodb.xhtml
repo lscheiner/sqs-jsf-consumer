@@ -85,12 +85,153 @@
 
         </p:panel>
 
+        <p:panel header="Detalhes da tabela"
+                 rendered="#{not empty dynamoDbController.descricaoTabela}"
+                 style="max-width: 950px; margin:1.5rem auto 0 auto;">
+
+            <div style="display:grid;
+                        grid-template-columns: 180px 1fr;
+                        row-gap:.75rem;
+                        column-gap:1rem;">
+
+                <strong>Tabela</strong>
+                <h:outputText value="#{dynamoDbController.tabelaSelecionada}" />
+
+                <strong>Partition Key</strong>
+                <h:outputText value="#{dynamoDbController.partitionKey} (#{dynamoDbController.tipoPartitionKey})" />
+
+                <strong>Sort Key</strong>
+                <h:panelGroup>
+                    <h:outputText value="#{dynamoDbController.sortKey} (#{dynamoDbController.tipoSortKey})"
+                                  rendered="#{not empty dynamoDbController.sortKey}" />
+                    <h:outputText value="-" rendered="#{empty dynamoDbController.sortKey}" />
+                </h:panelGroup>
+
+                <strong>Items</strong>
+                <h:outputText value="#{dynamoDbController.quantidadeItens}" />
+
+                <strong>Status</strong>
+                <h:outputText value="#{dynamoDbController.statusTabela}" />
+
+            </div>
+
+        </p:panel>
+
+        <p:panel header="Itens"
+                 rendered="#{not empty dynamoDbController.descricaoTabela}"
+                 style="max-width: 950px; margin:1.5rem auto 0 auto;">
+
+            <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+                <p:commandButton value="Novo item"
+                                 icon="pi pi-plus"
+                                 process="@this"
+                                 update=":dialogItemForm"
+                                 oncomplete="PF('dialogItemWidget').show()"
+                                 action="#{dynamoDbController.novoItem}" />
+            </div>
+
+            <p:dataTable id="tabelaItens"
+                         value="#{dynamoDbController.itensTabela}"
+                         var="item"
+                         paginator="true"
+                         rows="10"
+                         emptyMessage="Nenhum item encontrado para esta tabela."
+                         scrollable="true"
+                         scrollWidth="100%"
+                         styleClass="dynamo-itens-table"
+                         responsiveLayout="scroll">
+
+                <p:columns value="#{dynamoDbController.colunas}"
+                           var="coluna"
+                           headerText="#{coluna}"
+                           style="width:220px; min-width:220px;">
+                    <h:outputText value="#{dynamoDbController.formatarValor(item[coluna])}" style="white-space:nowrap;" />
+                </p:columns>
+
+                <p:column headerText="Ações" style="width:120px; min-width:120px; text-align:center;">
+                    <p:commandButton icon="pi pi-pencil"
+                                     title="Editar item"
+                                     rounded="true"
+                                     process="@this"
+                                     update=":dialogItemForm"
+                                     oncomplete="PF('dialogItemWidget').show()"
+                                     action="#{dynamoDbController.editarItem(item)}"
+                                     style="margin-right:.5rem;" />
+
+                    <p:commandButton icon="pi pi-trash"
+                                     title="Excluir item"
+                                     rounded="true"
+                                     styleClass="ui-button-danger"
+                                     process="@this"
+                                     update="@form growl"
+                                     action="#{dynamoDbController.excluirItem(item)}" />
+                </p:column>
+
+            </p:dataTable>
+
+        </p:panel>
+
     </h:form>
 
 </ui:define>
 
 
 	<ui:define name="dialogs">
+
+        <h:form id="dialogItemForm">
+
+            <p:dialog id="dialogItem"
+                      widgetVar="dialogItemWidget"
+                      header="#{dynamoDbController.novoItem ? 'Novo item' : 'Editar item'}"
+                      modal="true"
+                      responsive="true"
+                      closable="true"
+                      width="90vw"
+                      height="90vh">
+
+                <div class="ui-fluid">
+
+                    <pe:codeMirror id="jsonItemEditor"
+                                   value="#{dynamoDbController.jsonItemFormulario}"
+                                   mode="javascript"
+                                   theme="dracula"
+                                   lineNumbers="true"
+                                   matchBrackets="true"
+                                   style="height:70vh; border:none;" />
+
+                    <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-top:1.25rem;">
+                        <p:commandButton value="Cancelar"
+                                         type="button"
+                                         outlined="true"
+                                         onclick="PF('dialogItemWidget').hide()" />
+
+                        <p:commandButton value="Salvar"
+                                         icon="pi pi-save"
+                                         process="@form"
+                                         update=":formDynamo:tabelaItens :growl"
+                                         action="#{dynamoDbController.salvarItem}"
+                                         oncomplete="if (args &amp;&amp; args.salvo) PF('dialogItemWidget').hide();" />
+                    </div>
+
+                </div>
+
+            </p:dialog>
+
+        </h:form>
+
+        <h:outputStylesheet>
+            .dynamo-itens-table .ui-datatable-scrollable-header-box table,
+            .dynamo-itens-table .ui-datatable-scrollable-body table {
+                width: max-content !important;
+                min-width: 100%;
+                table-layout: auto !important;
+            }
+
+            .dynamo-itens-table th,
+            .dynamo-itens-table td {
+                white-space: nowrap;
+            }
+        </h:outputStylesheet>
 
 	</ui:define>
 </ui:composition>
