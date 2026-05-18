@@ -18,9 +18,9 @@ public class SqsQueueService {
 
     public List<String> listarFilas() {
 
-        return sqsClientProvider.getClient().listQueues().queueUrls()
+        return this.sqsClientProvider.getClient().listQueues().queueUrls()
                 .stream()
-                .map(sqsClientProvider::extrairNomeFila)
+                .map(this.sqsClientProvider::extrairNomeFila)
                 .sorted()
                 .toList();
     }
@@ -28,7 +28,7 @@ public class SqsQueueService {
     public void purgeFila(String fila) {
 
     	 final var request = PurgeQueueRequest.builder()
-                 .queueUrl(sqsClientProvider.montarQueueUrl(fila))
+                 .queueUrl(this.sqsClientProvider.montarQueueUrl(fila))
                  .build();
     	 
          this.sqsClientProvider.getClient().purgeQueue(request);

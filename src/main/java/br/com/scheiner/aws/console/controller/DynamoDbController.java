@@ -52,20 +52,20 @@ public class DynamoDbController implements SqsController {
     public DynamoDbController(DynamodbService dynamodbService) {
 		super();
 		this.dynamodbService = dynamodbService;
-        atualizarTabelas();
+        this.atualizarTabelas();
 	}
 
     public void atualizarTabelas() {
 
         try {
 
-        	this.tabelas = dynamodbService.buscarTabelas();
+        	this.tabelas = this.dynamodbService.buscarTabelas();
         	this.limparTabelaSelecionada();
-            adicionarMensagem(FacesMessage.SEVERITY_INFO, "Sucesso", "Tabelas carregadas com sucesso." );
+            this.adicionarMensagem(FacesMessage.SEVERITY_INFO, "Sucesso", "Tabelas carregadas com sucesso." );
 
         } catch (Exception e) {
 			LOGGER.error("Erro carregando tabelas", e);
-            adicionarMensagem( FacesMessage.SEVERITY_ERROR, "Erro",  "Erro ao carregar tabelas." );
+            this.adicionarMensagem( FacesMessage.SEVERITY_ERROR, "Erro",  "Erro ao carregar tabelas." );
         }
     }
 
@@ -73,20 +73,20 @@ public class DynamoDbController implements SqsController {
     	try {
     		this.descricaoTabela = dynamodbService.descreverTabela(this.tabelaSelecionada);
     		this.metadataTabela = new DynamoDbTableMetadata(this.descricaoTabela);
-    		this.itensTabela = dynamodbService.buscarItens(this.tabelaSelecionada);
-    		this.colunas = montarColunas(this.itensTabela);
+    		this.itensTabela = this.dynamodbService.buscarItens(this.tabelaSelecionada);
+    		this.colunas = this.montarColunas(this.itensTabela);
     		adicionarMensagem(FacesMessage.SEVERITY_INFO, "Tabela selecionada", this.tabelaSelecionada);
     	} catch (Exception e) {
     		LOGGER.error("Erro carregando detalhes da tabela {}", this.tabelaSelecionada, e);
-    		limparDetalhesTabela();
+    		this.limparDetalhesTabela();
     		adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro", "Erro ao carregar detalhes da tabela.");
     	}
     }
 
     public void editarItem(Map<String, AttributeValue> item) {
-    	Map<String, AttributeValue> chaveItem = extrairChave(item);
+    	var chaveItem = extrairChave(item);
     	this.chaveOriginalEmEdicao = chaveItem;
-    	Map<String, AttributeValue> itemCompleto = dynamodbService.buscarItem(
+    	var itemCompleto = dynamodbService.buscarItem(
     			this.tabelaSelecionada,
     			this.chaveOriginalEmEdicao
     	);
@@ -96,14 +96,14 @@ public class DynamoDbController implements SqsController {
 
     public void novoItem() {
     	Map<String, AttributeValue> itemInicial = new LinkedHashMap<>();
-    	String partitionKey = metadataTabela.getPartitionKey();
-    	String sortKey = metadataTabela.getSortKey();
+    	var partitionKey = this.metadataTabela.getPartitionKey();
+    	var sortKey = this.metadataTabela.getSortKey();
 
     	if (partitionKey != null) {
-    		itemInicial.put(partitionKey, criarValorVazioPorTipo(metadataTabela.getTipoAtributo(partitionKey)));
+    		itemInicial.put(partitionKey, criarValorVazioPorTipo(this.metadataTabela.getTipoAtributo(partitionKey)));
     	}
     	if (sortKey != null) {
-    		itemInicial.put(sortKey, criarValorVazioPorTipo(metadataTabela.getTipoAtributo(sortKey)));
+    		itemInicial.put(sortKey, criarValorVazioPorTipo(this.metadataTabela.getTipoAtributo(sortKey)));
     	}
 
     	this.jsonItemFormulario = JsonUtils.prettyPrint(DynamoDbJsonMapper.toJson(itemInicial));
@@ -113,19 +113,23 @@ public class DynamoDbController implements SqsController {
 
     public void salvarItem() {
     	try {
-    		Map<String, AttributeValue> itemParaSalvar = DynamoDbJsonMapper.fromJson(this.jsonItemFormulario);
-    		dynamodbService.salvarItem(this.tabelaSelecionada, itemParaSalvar);
-    		Map<String, AttributeValue> novaChave = extrairChave(itemParaSalvar);
+    		var itemParaSalvar = DynamoDbJsonMapper.fromJson(this.jsonItemFormulario);
+    		this.dynamodbService.salvarItem(this.tabelaSelecionada, itemParaSalvar);
+    		var novaChave = extrairChave(itemParaSalvar);
+    		
     		if (!this.novoItem && !novaChave.equals(this.chaveOriginalEmEdicao)) {
-    			dynamodbService.excluirItem(this.tabelaSelecionada, this.chaveOriginalEmEdicao);
+    			this.dynamodbService.excluirItem(this.tabelaSelecionada, this.chaveOriginalEmEdicao);
     		}
-    		recarregarItensTabela();
+    		
+    		this.recarregarItensTabela();
     		PrimeFaces.current().ajax().addCallbackParam("salvo", true);
+    		
     		adicionarMensagem(
     				FacesMessage.SEVERITY_INFO,
     				this.novoItem ? "Item criado" : "Item salvo",
     				this.novoItem ? "Item criado com sucesso." : "Item atualizado com sucesso."
     		);
+    		
     	} catch (Exception e) {
     		LOGGER.error("Erro salvando item da tabela {}", this.tabelaSelecionada, e);
     		PrimeFaces.current().ajax().addCallbackParam("salvo", false);
@@ -135,11 +139,11 @@ public class DynamoDbController implements SqsController {
 
     public void excluirItem(Map<String, AttributeValue> item) {
     	try {
-    		dynamodbService.excluirItem(
+    		this.dynamodbService.excluirItem(
     				this.tabelaSelecionada,
     				extrairChave(item)
     		);
-    		recarregarItensTabela();
+    		this.recarregarItensTabela();
     		adicionarMensagem(FacesMessage.SEVERITY_INFO, "Item excluído", "Item removido com sucesso.");
     	} catch (Exception e) {
     		LOGGER.error("Erro excluindo item da tabela {}", this.tabelaSelecionada, e);
@@ -149,7 +153,7 @@ public class DynamoDbController implements SqsController {
 
     public void atualizarItens() {
     	try {
-    		recarregarItensTabela();
+    		this.recarregarItensTabela();
     		adicionarMensagem(FacesMessage.SEVERITY_INFO, "Itens atualizados", "Itens recarregados com sucesso.");
     	} catch (Exception e) {
     		LOGGER.error("Erro atualizando itens da tabela {}", this.tabelaSelecionada, e);
@@ -175,7 +179,7 @@ public class DynamoDbController implements SqsController {
 
     private void limparTabelaSelecionada() {
     	this.tabelaSelecionada = null;
-    	limparDetalhesTabela();
+    	this.limparDetalhesTabela();
     }
 
     private void limparDetalhesTabela() {
@@ -194,8 +198,8 @@ public class DynamoDbController implements SqsController {
     	itens.forEach(item -> colunasEncontradas.addAll(item.keySet()));
 
     	List<String> colunasOrdenadas = new ArrayList<>();
-    	String partitionKey = metadataTabela.getPartitionKey();
-    	String sortKey = metadataTabela.getSortKey();
+    	var partitionKey = this.metadataTabela.getPartitionKey();
+    	var sortKey = this.metadataTabela.getSortKey();
 
     	if (partitionKey != null && colunasEncontradas.remove(partitionKey)) {
     		colunasOrdenadas.add(partitionKey);
@@ -210,14 +214,14 @@ public class DynamoDbController implements SqsController {
     }
 
     private void recarregarItensTabela() {
-    	this.itensTabela = dynamodbService.buscarItens(this.tabelaSelecionada);
+    	this.itensTabela = this.dynamodbService.buscarItens(this.tabelaSelecionada);
     	this.colunas = montarColunas(this.itensTabela);
     }
 
     private Map<String, AttributeValue> extrairChave(Map<String, AttributeValue> item) {
     	Map<String, AttributeValue> chave = new LinkedHashMap<>();
-    	String partitionKey = metadataTabela.getPartitionKey();
-    	String sortKey = metadataTabela.getSortKey();
+    	var partitionKey = this.metadataTabela.getPartitionKey();
+    	var sortKey = this.metadataTabela.getSortKey();
 
     	if (partitionKey != null) {
     		chave.put(partitionKey, item.get(partitionKey));
@@ -294,7 +298,7 @@ public class DynamoDbController implements SqsController {
 			return "null";
 		}
 
-		return formatarPreviewValorComplexo(valor);
+		return this.formatarPreviewValorComplexo(valor);
 	}
 
 	public boolean isValorComplexo(AttributeValue valor) {

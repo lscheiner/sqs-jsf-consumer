@@ -14,27 +14,27 @@ public class DynamoDbTableMetadata {
 	}
 
 	public TableDescription getTableDescription() {
-		return tableDescription;
+		return this.tableDescription;
 	}
 
 	public String getPartitionKey() {
-		return buscarNomeChave(KeyType.HASH);
+		return this.buscarNomeChave(KeyType.HASH);
 	}
 
 	public String getSortKey() {
-		return buscarNomeChave(KeyType.RANGE);
+		return this.buscarNomeChave(KeyType.RANGE);
 	}
 
 	public String getTipoPartitionKey() {
-		return buscarTipoChave(KeyType.HASH);
+		return this.buscarTipoChave(KeyType.HASH);
 	}
 
 	public String getTipoSortKey() {
-		return buscarTipoChave(KeyType.RANGE);
+		return this.buscarTipoChave(KeyType.RANGE);
 	}
 
 	public String getTipoAtributo(String nomeAtributo) {
-		return tableDescription.attributeDefinitions()
+		return this.tableDescription.attributeDefinitions()
 				.stream()
 				.filter(atributo -> atributo.attributeName().equals(nomeAtributo))
 				.map(AttributeDefinition::attributeTypeAsString)
@@ -43,15 +43,15 @@ public class DynamoDbTableMetadata {
 	}
 
 	public Long getQuantidadeItens() {
-		return tableDescription.itemCount();
+		return this.tableDescription.itemCount();
 	}
 
 	public String getStatusTabela() {
-		return tableDescription.tableStatusAsString();
+		return this.tableDescription.tableStatusAsString();
 	}
 
 	private String buscarNomeChave(KeyType tipoChave) {
-		return tableDescription.keySchema()
+		return this.tableDescription.keySchema()
 				.stream()
 				.filter(chave -> chave.keyType() == tipoChave)
 				.map(KeySchemaElement::attributeName)
@@ -60,11 +60,11 @@ public class DynamoDbTableMetadata {
 	}
 
 	private String buscarTipoChave(KeyType tipoChave) {
-		String nomeChave = buscarNomeChave(tipoChave);
+		var nomeChave = this.buscarNomeChave(tipoChave);
 		if (nomeChave == null) {
 			return null;
 		}
 
-		return getTipoAtributo(nomeChave);
+		return this.getTipoAtributo(nomeChave);
 	}
 }

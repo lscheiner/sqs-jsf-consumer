@@ -21,9 +21,9 @@ public class SqsProducerService {
 
         final var request =
                 SendMessageRequest.builder()
-                        .queueUrl(sqsClientProvider.montarQueueUrl(fila))
+                        .queueUrl(this.sqsClientProvider.montarQueueUrl(fila))
                         .messageBody(payload)
-                        .messageAttributes(montarAttributes())
+                        .messageAttributes(this.montarAttributes())
                         .build();
 
         this.sqsClientProvider.getClient().sendMessage(request);

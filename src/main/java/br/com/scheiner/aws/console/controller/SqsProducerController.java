@@ -36,27 +36,27 @@ public class SqsProducerController implements SqsController  {
 
     public void enviarMensagem() {
 
-        LOGGER.info("Enviando mensagem para fila [{}]",  filaSelecionada);
+        LOGGER.info("Enviando mensagem para fila [{}]",  this.filaSelecionada);
 
-        LOGGER.info("Payload enviado: {}", payload);
+        LOGGER.info("Payload enviado: {}", this.payload);
 
-        sqsProducerService.enviarMensagem( filaSelecionada, payload);
+        this.sqsProducerService.enviarMensagem(this.filaSelecionada, this.payload);
         
-        LOGGER.info("Mensagem enviada com sucesso para fila [{}]", filaSelecionada);
+        LOGGER.info("Mensagem enviada com sucesso para fila [{}]", this.filaSelecionada);
         
-        adicionarMensagem(FacesMessage.SEVERITY_INFO,"Sucesso","Mensagem enviada para fila SQS.");
+        this.adicionarMensagem(FacesMessage.SEVERITY_INFO,"Sucesso","Mensagem enviada para fila SQS.");
     }
 
     public void limpar() {
 
-        payload = null;
-        filaSelecionada = null;
+        this.payload = null;
+        this.filaSelecionada = null;
     }
 
 	public List<String> getFilas() {
 
 		try {
-			return sqsQueueService.listarFilas();
+			return this.sqsQueueService.listarFilas();
 		} catch (Exception e) {
 			LOGGER.error("Erro carregando filas", e);
 		}
@@ -64,7 +64,7 @@ public class SqsProducerController implements SqsController  {
 	}
 
     public String getPayload() {
-        return payload;
+        return this.payload;
     }
 
     public void setPayload(String payload) {
@@ -72,7 +72,7 @@ public class SqsProducerController implements SqsController  {
     }
 
     public String getFilaSelecionada() {
-        return filaSelecionada;
+        return this.filaSelecionada;
     }
 
     public void setFilaSelecionada(String filaSelecionada) {

@@ -30,13 +30,13 @@ public class ConfigController implements SqsController {
 		super();
 		this.awsProvider = awsProvider;
 		this.awsConfiguration = awsConfiguration;
-		this.endpoint = awsConfiguration.getEndpoint();
-		this.region = awsConfiguration.getRegion().id();
+		this.endpoint = this.awsConfiguration.getEndpoint();
+		this.region = this.awsConfiguration.getRegion().id();
 		this.testarConexao();
 	}
 
 	public String getEndpoint() {
-		return endpoint;
+		return this.endpoint;
 	}
 
 	public void setEndpoint(String endpoint) {
@@ -44,7 +44,7 @@ public class ConfigController implements SqsController {
 	}
 
 	public String getRegion() {
-		return region;
+		return this.region;
 	}
 
 	public void setRegion(String region) {
@@ -52,7 +52,7 @@ public class ConfigController implements SqsController {
 	}
 
 	public boolean isConnected() {
-		return connected;
+		return this.connected;
 	}
 
 	public void setConnected(boolean connected) {
@@ -60,7 +60,7 @@ public class ConfigController implements SqsController {
 	}
 
 	public List<AwsProvider> getAwsProvider() {
-		return awsProvider;
+		return this.awsProvider;
 	}
 	
 	public List<String> getRegions() {
@@ -84,7 +84,7 @@ public class ConfigController implements SqsController {
 	public void aplicarConfiguracao()  {
 
 	    try {
-	    	validarEndpoint(this.endpoint);
+	    	this.validarEndpoint(this.endpoint);
 	        this.awsConfiguration.setEndpoint(this.endpoint);
 	        this.awsConfiguration.setRegion(Region.of(this.region));
 	        this.awsProvider.forEach(AwsProvider::reconfigurar);

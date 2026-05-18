@@ -207,9 +207,10 @@
                       responsive="true"
                       closable="true"
                       width="90vw"
-                      height="90vh">
+                      height="90vh"
+                      styleClass="dialog-item-json">
 
-                <div class="ui-fluid">
+                <div class="ui-fluid dialog-item-json-content">
 
                     <pe:codeMirror id="jsonItemEditor"
                                    value="#{dynamoDbController.jsonItemFormulario}"
@@ -217,7 +218,7 @@
                                    theme="dracula"
                                    lineNumbers="true"
                                    matchBrackets="true"
-                                   style="height:70vh; border:none;" />
+                                   style="border:none;" />
 
                     <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-top:1.25rem;">
                         <p:commandButton value="Cancelar"
@@ -264,16 +265,21 @@
         </h:form>
 
         <h:outputStylesheet>
-            .dynamo-itens-table .ui-datatable-scrollable-header-box table,
-            .dynamo-itens-table .ui-datatable-scrollable-body table {
-                width: max-content !important;
-                min-width: 100%;
-                table-layout: auto !important;
+  
+            .dialog-item-json .ui-dialog-content {
+                height: calc(90vh - 4.5rem) !important;
+                box-sizing: border-box;
             }
 
-            .dynamo-itens-table th,
-            .dynamo-itens-table td {
-                white-space: nowrap;
+            .dialog-item-json-content {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .dialog-item-json-content .CodeMirror {
+                flex: 1;
+                height: auto !important;
             }
         </h:outputStylesheet>
 

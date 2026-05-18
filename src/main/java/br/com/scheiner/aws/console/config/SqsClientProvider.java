@@ -31,9 +31,9 @@ public class SqsClientProvider implements AwsProvider {
     @Override
     public void reconfigurar() {
 
-        var novoClient = criarClient(this.awsConfiguration.getEndpoint(), this.awsConfiguration.getRegion());
+        var novoClient = this.criarClient(this.awsConfiguration.getEndpoint(), this.awsConfiguration.getRegion());
 
-        var antigo = clientRef.getAndSet(novoClient);
+        var antigo = this.clientRef.getAndSet(novoClient);
 
         if (antigo != null) {
             antigo.close();
@@ -43,7 +43,7 @@ public class SqsClientProvider implements AwsProvider {
     @Override
     public boolean isConectado() {
         try {
-            getClient().listQueues();
+            this.getClient().listQueues();
             return true;
         } catch (Exception ex) {
         	LOGGER.error("Erro conectando no SQS" ,ex );
@@ -77,7 +77,7 @@ public class SqsClientProvider implements AwsProvider {
     }
 
     public SqsClient getClient() {
-        return clientRef.get();
+        return this.clientRef.get();
     }
 
 }

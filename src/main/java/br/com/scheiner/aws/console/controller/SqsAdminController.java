@@ -29,18 +29,18 @@ public class SqsAdminController implements SqsController {
 		try {
 
 			this.sqsQueueService.purgeFila(this.filaSelecionada);
-			adicionarMensagem(FacesMessage.SEVERITY_INFO, "Fila limpa", "Purge executado com sucesso.");
+			this.adicionarMensagem(FacesMessage.SEVERITY_INFO, "Fila limpa", "Purge executado com sucesso.");
 
 		} catch (Exception ex) {
 
-			adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro ao executar purge", ex.getMessage());
+			this.adicionarMensagem(FacesMessage.SEVERITY_ERROR, "Erro ao executar purge", ex.getMessage());
 		}
 	}
 
 	public List<String> getFilas() {
 
 		try {
-			return sqsQueueService.listarFilas();
+			return this.sqsQueueService.listarFilas();
 		} catch (Exception e) {
 			LOGGER.error("Erro carregando filas", e);
 		}
@@ -48,7 +48,7 @@ public class SqsAdminController implements SqsController {
 	}
 
 	public String getFilaSelecionada() {
-		return filaSelecionada;
+		return this.filaSelecionada;
 	}
 
 	public void setFilaSelecionada(String filaSelecionada) {
@@ -56,7 +56,7 @@ public class SqsAdminController implements SqsController {
 	}
 
 	public SqsQueueService getSqsQueueService() {
-		return sqsQueueService;
+		return this.sqsQueueService;
 	}
 	
 }

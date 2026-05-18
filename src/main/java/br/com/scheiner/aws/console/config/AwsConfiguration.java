@@ -19,24 +19,24 @@ public class AwsConfiguration {
             @Value("${aws.region}") String region
     ) {
 
-        endpointRef.set(endpoint);
-        regionRef.set(Region.of(region));
+        this.endpointRef.set(endpoint);
+        this.regionRef.set(Region.of(region));
     }
 
     public String getEndpoint() {
-        return endpointRef.get();
+        return this.endpointRef.get();
     }
 
     public void setEndpoint(String endpoint) {
-        endpointRef.set(endpoint);
+        this.endpointRef.set(endpoint);
     }
 
     public Region getRegion() {
-        return regionRef.get();
+        return this.regionRef.get();
     }
 
     public void setRegion(Region region) {
-        regionRef.set(region);
+        this.regionRef.set(region);
     }
 
 }

@@ -27,7 +27,7 @@ public class DynamodbService {
     
 	public List<String> buscarTabelas() {
 
-		 var response = dynamoDbClientProvider
+		 var response = this.dynamoDbClientProvider
                  .getClient()
                  .listTables(
                          ListTablesRequest.builder().build()
@@ -37,7 +37,7 @@ public class DynamodbService {
     }
 
 	public TableDescription descreverTabela(String nomeTabela) {
-		return dynamoDbClientProvider
+		return this.dynamoDbClientProvider
 				.getClient()
 				.describeTable(
 						DescribeTableRequest.builder()
@@ -48,7 +48,7 @@ public class DynamodbService {
 	}
 
 	public List<Map<String, AttributeValue>> buscarItens(String nomeTabela) {
-		var response = dynamoDbClientProvider
+		var response = this.dynamoDbClientProvider
 				.getClient()
 				.scan(
 						ScanRequest.builder()
@@ -60,7 +60,7 @@ public class DynamodbService {
 	}
 
 	public void salvarItem(String nomeTabela, Map<String, AttributeValue> item) {
-		dynamoDbClientProvider
+		this.dynamoDbClientProvider
 				.getClient()
 				.putItem(
 						PutItemRequest.builder()
@@ -71,7 +71,7 @@ public class DynamodbService {
 	}
 
 	public Map<String, AttributeValue> buscarItem(String nomeTabela, Map<String, AttributeValue> chave) {
-		return dynamoDbClientProvider
+		return this.dynamoDbClientProvider
 				.getClient()
 				.getItem(
 						GetItemRequest.builder()
@@ -83,7 +83,7 @@ public class DynamodbService {
 	}
 
 	public void excluirItem(String nomeTabela, Map<String, AttributeValue> chave) {
-		dynamoDbClientProvider
+		this.dynamoDbClientProvider
 				.getClient()
 				.deleteItem(
 						DeleteItemRequest.builder()

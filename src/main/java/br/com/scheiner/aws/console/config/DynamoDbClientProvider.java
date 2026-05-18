@@ -31,8 +31,8 @@ public class DynamoDbClientProvider implements AwsProvider {
     @Override
     public void reconfigurar() {
 
-        var novoClient = criarClient(awsConfiguration.getEndpoint(), awsConfiguration.getRegion());
-        var antigo = clientRef.getAndSet(novoClient);
+        var novoClient = this.criarClient(this.awsConfiguration.getEndpoint(), this.awsConfiguration.getRegion());
+        var antigo = this.clientRef.getAndSet(novoClient);
 
         if (antigo != null) {
             antigo.close();
@@ -42,7 +42,7 @@ public class DynamoDbClientProvider implements AwsProvider {
     @Override
     public boolean isConectado() {
         try {
-            getClient().listTables(
+            this.getClient().listTables(
                     ListTablesRequest.builder()
                             .limit(1)
                             .build()
@@ -71,6 +71,6 @@ public class DynamoDbClientProvider implements AwsProvider {
     }
 
     public DynamoDbClient getClient() {
-        return clientRef.get();
+        return this.clientRef.get();
     }
 }

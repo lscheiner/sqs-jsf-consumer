@@ -77,7 +77,7 @@ public class SqsConsumerController implements SqsController {
 	public List<String> getFilas() {
 
 		try {
-			return sqsQueueService.listarFilas();
+			return this.sqsQueueService.listarFilas();
 		} catch (Exception e) {
 			LOGGER.error("Erro carregando filas", e);
 		}
@@ -85,7 +85,7 @@ public class SqsConsumerController implements SqsController {
 	}
 
     public String getFilaSelecionada() {
-        return filaSelecionada;
+        return this.filaSelecionada;
     }
 
     public void setFilaSelecionada(String filaSelecionada) {
@@ -93,7 +93,7 @@ public class SqsConsumerController implements SqsController {
     }
 
     public Integer getQuantidadeMensagens() {
-        return quantidadeMensagens;
+        return this.quantidadeMensagens;
     }
 
     public void setQuantidadeMensagens(Integer quantidadeMensagens) {
@@ -101,13 +101,13 @@ public class SqsConsumerController implements SqsController {
     }
 
     public List<Message> getMensagens() {
-        return mensagens;
+        return this.mensagens;
     }
 
     public String getConteudoMensagem() {
-        return conteudoMensagem;
+        return this.conteudoMensagem;
     }
     public Map<String, MessageAttributeValue> getMessageAttributes() {
-        return messageAttributes;
+        return this.messageAttributes;
     }
 }
