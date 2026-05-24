@@ -10,12 +10,15 @@ services:
       - SERVICES=sqs,dynamodb
       - DEBUG=1
       - LOCALSTACK_HOSTNAME=localstack
+      - AWS_DEFAULT_REGION=sa-east-1
+      - DEFAULT_REGION=sa-east-1
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./localstack/init:/etc/localstack/init"
       - "./localstack-config/:/opt/custom"
     networks:
       - app-network
+
   redis:
     image: redis:8.6.3
     container_name: redis

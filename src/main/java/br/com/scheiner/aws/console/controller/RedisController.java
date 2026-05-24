@@ -148,18 +148,17 @@ public class RedisController implements Controller {
 	}
 
 	public String formatarTtl(Long ttl) {
-		if (ttl == null) {
-			return "-";
-		}
-		if (ttl == -1) {
-			return "Sem expiração";
-		}
-		if (ttl == -2) {
-			return "Expirado";
-		}
 
-		return "%d segundos".formatted(ttl);
-	}
+        if (ttl == null) {
+            return "-";
+        }
+
+        return switch (ttl.intValue()) {
+            case -1 -> "Sem expiração";
+            case -2 -> "Expirado";
+            default -> "%d segundos".formatted(ttl);
+        };
+    }
 
 	public String previewValor(String valor) {
 		if (valor == null || valor.isBlank()) {
