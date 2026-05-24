@@ -14,7 +14,7 @@ import software.amazon.awssdk.regions.Region;
 
 @Named
 @ViewScoped
-public class ConfigController implements SqsController {
+public class ConfigController implements Controller {
 	
 	private String endpoint;
 

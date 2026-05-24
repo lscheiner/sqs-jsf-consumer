@@ -59,7 +59,12 @@
                         </p:column>
 
                         <p:column headerText="Valor" sortBy="#{registro.valor}" filterBy="#{registro.valor}" filterMatchMode="contains">
-                            <h:outputText value="#{registro.valor}" />
+                            <h:outputText id="valorPreview"
+                                          value="#{redisController.previewValor(registro.valor)}"
+                                          style="display:block; max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" />
+                            <p:tooltip for="valorPreview" position="top">
+                                <h:outputText value="#{redisController.previewValor(registro.valor)}" />
+                            </p:tooltip>
                         </p:column>
 
                         <p:column headerText="TTL" style="width:150px; text-align:center;" sortBy="#{registro.ttl}">

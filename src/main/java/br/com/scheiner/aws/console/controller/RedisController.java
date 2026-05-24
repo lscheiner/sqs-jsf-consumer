@@ -16,9 +16,11 @@ import jakarta.inject.Named;
 
 @Named
 @ViewScoped
-public class RedisController implements SqsController {
+public class RedisController implements Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RedisController.class);
+
+	private static final int TAMANHO_PREVIEW_VALOR = 120;
 
 	private final RedisService redisService;
 
@@ -157,6 +159,20 @@ public class RedisController implements SqsController {
 		}
 
 		return "%d segundos".formatted(ttl);
+	}
+
+	public String previewValor(String valor) {
+		if (valor == null || valor.isBlank()) {
+			return "";
+		}
+
+		var valorNormalizado = valor.replaceAll("\\s+", " ").trim();
+
+		if (valorNormalizado.length() <= TAMANHO_PREVIEW_VALOR) {
+			return valorNormalizado;
+		}
+
+		return valorNormalizado.substring(0, TAMANHO_PREVIEW_VALOR).concat("...");
 	}
 
 	private void carregarConfiguracao() {

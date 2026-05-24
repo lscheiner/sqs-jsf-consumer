@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.sqs.model.MessageSystemAttributeName;
 
 @Named
 @ViewScoped
-public class SqsConsumerController implements SqsController {
+public class SqsConsumerController implements Controller {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsConsumerController.class);
 	

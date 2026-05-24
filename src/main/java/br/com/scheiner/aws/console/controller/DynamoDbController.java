@@ -23,7 +23,7 @@ import software.amazon.awssdk.services.dynamodb.model.TableDescription;
 
 @Named
 @ViewScoped
-public class DynamoDbController implements SqsController {
+public class DynamoDbController implements Controller {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDbController.class);
 

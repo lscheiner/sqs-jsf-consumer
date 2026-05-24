@@ -13,7 +13,7 @@ import jakarta.inject.Named;
 
 @Named
 @ViewScoped
-public class SqsProducerController implements SqsController  {
+public class SqsProducerController implements Controller  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SqsProducerController.class);
 
