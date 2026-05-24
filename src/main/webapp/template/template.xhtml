@@ -9,7 +9,7 @@
 
     <title>
         <ui:insert name="title">
-            AWS Console
+            Localstack Console
         </ui:insert>
     </title>
 
@@ -190,7 +190,7 @@
             <aside class="sidebar">
 
                 <div class="sidebar-logo">
-                    AWS Console
+                    Localstack Console
                 </div>
 
                 <div class="menu-group-title">
@@ -209,6 +209,11 @@
                     <span>
                         DynamoDB
                     </span>
+                </h:link>
+
+                <h:link outcome="/redis" styleClass="menu-item #{view.viewId eq '/redis.xhtml' ? 'active' : ''}">
+                    <i class="pi pi-server"></i>
+                    <h:outputText value="Redis" />
                 </h:link>
                 
                 <h:link outcome="/configuracao" styleClass="menu-item #{view.viewId eq '/configuracao.xhtml' ? 'active' : ''}">

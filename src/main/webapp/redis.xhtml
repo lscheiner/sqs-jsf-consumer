@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="template/template.xhtml">
+
+<ui:define name="content">
+
+    <div class="page-header">
+
+        <div class="page-title">
+            Redis
+        </div>
+
+        <div class="page-subtitle">
+            Gerenciamento de registros e configuração de conexão Redis
+        </div>
+
+    </div>
+
+    <p:tabView id="tabViewRedis" widgetVar="tabViewRedisWidget">
+
+        <p:tab title="Registros Redis">
+
+            <h:form id="formRedisRegistros">
+
+                <p:panel header="Gerenciamento de registros Redis" style="max-width: 950px; margin:auto;">
+
+                    <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-bottom:1rem;">
+
+                        <p:commandButton value="Atualizar"
+                                         icon="pi pi-refresh"
+                                         process="@this"
+                                         update=":tabViewRedis:formRedisRegistros:tabelaRegistrosRedis :growl"
+                                         action="#{redisController.atualizarRegistrosGrid}"
+                                         outlined="true" />
+
+                        <p:commandButton value="Novo registro"
+                                         icon="pi pi-plus"
+                                         process="@this"
+                                         update=":dialogRedisRegistroForm"
+                                         oncomplete="PF('dialogRedisRegistroWidget').show()"
+                                         action="#{redisController.novoRegistro}" />
+
+                    </div>
+
+                    <p:dataTable id="tabelaRegistrosRedis"
+                                 value="#{redisController.registros}"
+                                 var="registro"
+                                 paginator="true"
+                                 rows="10"
+                                 emptyMessage="Nenhum registro encontrado no Redis."
+                                 responsiveLayout="scroll">
+
+                        <p:column headerText="Chave" sortBy="#{registro.chave}" filterBy="#{registro.chave}" filterMatchMode="contains">
+                            <h:outputText value="#{registro.chave}" style="font-family:monospace;" />
+                        </p:column>
+
+                        <p:column headerText="Valor" sortBy="#{registro.valor}" filterBy="#{registro.valor}" filterMatchMode="contains">
+                            <h:outputText value="#{registro.valor}" />
+                        </p:column>
+
+                        <p:column headerText="TTL" style="width:150px; text-align:center;" sortBy="#{registro.ttl}">
+                            <h:outputText value="#{redisController.formatarTtl(registro.ttl)}" />
+                        </p:column>
+
+                        <p:column headerText="Ações" style="width:120px; min-width:120px; text-align:center;">
+
+                            <p:commandButton icon="pi pi-pencil"
+                                             title="Editar registro"
+                                             rounded="true"
+                                             process="@this"
+                                             update=":dialogRedisRegistroForm"
+                                             oncomplete="PF('dialogRedisRegistroWidget').show()"
+                                             action="#{redisController.editarRegistro(registro)}"
+                                             style="margin-right:.5rem;" />
+
+                            <p:commandButton icon="pi pi-trash"
+                                             title="Excluir registro"
+                                             rounded="true"
+                                             styleClass="ui-button-danger"
+                                             process="@this"
+                                             update=":tabViewRedis:formRedisRegistros:tabelaRegistrosRedis :growl"
+                                             action="#{redisController.excluirRegistro(registro)}" />
+
+                        </p:column>
+
+                    </p:dataTable>
+
+                </p:panel>
+
+            </h:form>
+
+        </p:tab>
+
+        <p:tab title="Configuração Redis">
+
+            <h:form id="formRedisConfig">
+
+                <p:panel header="Configuração Redis" style="max-width: 950px; margin:auto;">
+
+                    <div class="ui-fluid">
+
+					<div style="display:grid; grid-template-columns: 1fr 140px; gap:1rem;  align-items:end; margin-bottom:1.5rem;">
+					    <div>
+					        <p:outputLabel for="host" value="Host" />
+					        <p:inputText id="host" value="#{redisController.host}" placeholder="localhost" required="true" style="width:100%;" />
+					    </div>
+					
+					    <div>
+					        <p:outputLabel for="port" value="Porta" />				
+					        <p:inputNumber id="port"  value="#{redisController.port}" thousandSeparator="" decimalPlaces="0" minValue="1" maxValue="65535" required="true" style="width:100%;" />
+					    </div>
+					
+					</div>
+
+                        <div class="field-checkbox" style="margin-bottom:10px;">
+                    		<p:selectBooleanCheckbox id="tls"  value="#{redisController.tls}" itemLabel="Habilitar TLS/SSL" />
+		                </div>
+
+					<div style="display:grid;  grid-template-columns: 1fr 1fr;  gap:1rem;  margin-bottom:1rem;">
+					
+					    <div>
+					        <p:outputLabel for="username" value="Usuário" />
+					        <p:inputText id="username" value="#{redisController.username}" placeholder="Opcional" style="width:100%;" />
+					
+					    </div>
+					
+					    <div>
+					        <p:outputLabel for="password" value="Senha" />
+					        <p:password id="password" value="#{redisController.password}" placeholder="Opcional" redisplay="true" feedback="false" style="width:100%;" />
+					
+					    </div>
+					
+					</div>
+
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; padding:1rem; border:1px solid var(--surface-border); border-radius:8px;">
+
+                            <div style="display:flex; align-items:center; gap:.75rem;">
+                                <p:tag value="#{redisController.connected ? 'Conectado' : 'Desconectado'}"
+                                       severity="#{redisController.connected ? 'success' : 'danger'}" />
+                                <h:outputText value="#{redisController.host}:#{redisController.port}" style="font-family:monospace;" />
+                            </div>
+
+                            <h:outputText value="#{redisController.tls ? 'TLS habilitado' : 'TLS desabilitado'}" />
+
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; align-items:center; gap:.75rem;">
+
+                            <p:commandButton value="Testar conexão"
+                                             icon="pi pi-link"
+                                             process="@form"
+                                             update=":growl @form"
+                                             action="#{redisController.testarConexao}"
+                                             style="width:auto; min-width:180px; font-weight:600;" />
+
+                            <p:commandButton value="Aplicar"
+                                             icon="pi pi-check"
+                                             process="@form"
+                                             update=":growl @form :tabViewRedis:formRedisRegistros:tabelaRegistrosRedis"
+                                             action="#{redisController.aplicarConfiguracao}"
+                                             style="width:auto; min-width:180px; font-weight:600;" />
+
+                        </div>
+
+                    </div>
+
+                </p:panel>
+
+            </h:form>
+
+        </p:tab>
+
+    </p:tabView>
+
+</ui:define>
+
+<ui:define name="dialogs">
+
+    <h:form id="dialogRedisRegistroForm">
+
+        <p:dialog id="dialogRedisRegistro"
+                  widgetVar="dialogRedisRegistroWidget"
+                  header="#{redisController.novoRegistro ? 'Novo registro Redis' : 'Editar registro Redis'}"
+                  modal="true"
+                  responsive="true"
+                  closable="true"
+                  width="720">
+
+            <div class="ui-fluid">
+
+                <div style="margin-bottom:1rem;">
+                    <p:outputLabel for="chave" value="Chave" style="font-weight:600;" />
+                    <p:inputText id="chave"
+                                 value="#{redisController.chaveFormulario}"
+                                 required="true"
+                                 requiredMessage="Informe a chave Redis."
+                                 style="margin-top:.5rem; font-family:monospace;" />
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <p:outputLabel for="valor" value="Valor" style="font-weight:600;" />
+                    <p:inputTextarea id="valor"
+                                     value="#{redisController.valorFormulario}"
+                                     rows="10"
+                                     autoResize="false"
+                                     required="true"
+                                     requiredMessage="Informe o valor Redis."
+                                     style="margin-top:.5rem; font-family:monospace;" />
+                </div>
+
+                <div style="margin-bottom:1rem;">
+                    <p:outputLabel for="ttl" value="TTL em segundos" style="font-weight:600;" />
+                    <p:inputNumber id="ttl"
+                                   value="#{redisController.ttlFormulario}"
+                                   decimalPlaces="0"
+                                   minValue="1"
+                                   placeholder="Sem expiração"
+                                   style="margin-top:.5rem;" />
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-top:1.25rem;">
+
+                    <p:commandButton value="Cancelar"
+                                     type="button"
+                                     outlined="true"
+                                     icon="pi pi-times"
+                                     onclick="PF('dialogRedisRegistroWidget').hide()" />
+
+                    <p:commandButton value="Salvar"
+                                     icon="pi pi-save"
+                                     process="@form"
+                                     update=":tabViewRedis:formRedisRegistros:tabelaRegistrosRedis :growl"
+                                     action="#{redisController.salvarRegistro}"
+                                     oncomplete="if (args &amp;&amp; args.salvo) PF('dialogRedisRegistroWidget').hide();" />
+
+                </div>
+
+            </div>
+
+        </p:dialog>
+
+    </h:form>
+
+</ui:define>
+
+</ui:composition>

@@ -16,6 +16,14 @@ services:
       - "./localstack-config/:/opt/custom"
     networks:
       - app-network
+  redis:
+    image: redis:8.6.3
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
 
 networks:
   app-network:
