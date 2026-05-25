@@ -1,243 +1,217 @@
-# SQS JSF Console
+# AWS Console
 
-Aplicação web para interação visual com filas AWS SQS utilizando Java, JSF, PrimeFaces e LocalStack.
+Aplicação Java desenvolvida com Spring Boot + JSF + PrimeFaces para gerenciamento de recursos AWS/local.
 
-O projeto fornece uma interface administrativa para gerenciamento e inspeção de filas SQS em ambiente local, permitindo executar operações diretamente pela interface web.
+O projeto possui interface web para administração de:
 
----
-
-# Visão geral
-
-O sistema foi desenvolvido para centralizar operações comuns de mensageria SQS em uma única interface.
-
-A aplicação permite:
-
-- listar filas
-- publicar mensagens
-- visualizar mensagens
-- inspecionar payloads
-- acompanhar leituras das mensagens
-- executar purge de filas
-- interagir com LocalStack
-- administrar filas de forma visual
-
-A proposta do projeto é fornecer uma experiência simples e direta para testes, estudos e troubleshooting utilizando AWS SQS localmente.
+- SQS
+- DynamoDB
+- Redis
+- configurações dinâmicas de conexão
 
 ---
 
-# Arquitetura do projeto
-
-O projeto foi desenvolvido utilizando:
+# Tecnologias
 
 - Java 21
-- Spring Boot 4
-- JoinFaces
+- Spring Boot
+- JSF
 - PrimeFaces
 - AWS SDK v2
+- Redis (Jedis)
 - LocalStack
+- Maven
 - Docker
 
-A aplicação utiliza JSF como camada de interface e o AWS SDK v2 para comunicação com o SQS.
+---
 
-O ambiente local é executado através do LocalStack via Docker.
+# SQS
+
+Módulo para gerenciamento de filas SQS.
+
+## Recursos
+
+- listar filas
+- consumir mensagens
+- enviar mensagens
+- purge de filas
+- configuração dinâmica
+
+## Componentes principais
+
+### SqsClientGateway
+
+Interface responsável pelo acesso ao SQS.
+
+### DefaultSqsClientGateway
+
+Implementação responsável por:
+
+- gerenciamento do `SqsClient`
+- integração AWS SDK
+- troca dinâmica do client
+- lifecycle do client
+
+A reconfiguração utiliza:
+
+```java
+AtomicReference<SqsClient>
+```
+
+### SqsQueueUrlResolver
+
+Responsável por:
+
+- montar queue URLs
+- extrair nome da fila
+
+## Services
+
+- `SqsConsumerService`
+- `SqsProducerService`
+- `SqsQueueService`
+
+## Controllers
+
+- `SqsConsumerController`
+- `SqsProducerController`
+- `SqsAdminController`
 
 ---
 
-# Estrutura do projeto
+# DynamoDB
+
+Módulo para gerenciamento de tabelas DynamoDB.
+
+## Recursos
+
+- listar tabelas
+- visualizar metadados
+- integração com LocalStack
+
+## Componentes principais
+
+### DynamoDbClientGateway
+
+Contrato de acesso ao DynamoDB.
+
+### DefaultDynamoDbClientGateway
+
+Implementação padrão do gateway.
+
+### DynamodbService
+
+Serviço responsável pelas operações.
+
+### DynamoDbController
+
+Controller JSF do módulo.
+
+---
+
+# Redis
+
+Módulo para gerenciamento de registros Redis.
+
+## Recursos
+
+- visualizar registros
+- incluir registros
+- editar registros
+- excluir registros
+- configuração dinâmica
+
+## Componentes principais
+
+### RedisClientProvider
+
+Gerenciamento da conexão Redis.
+
+### RedisService
+
+Operações Redis.
+
+### RedisController
+
+Controller JSF responsável pela interface.
+
+## Modelos
+
+- `RedisConfiguracao`
+- `RedisRegistro`
+
+---
+
+# Health Check
+
+Serviços responsáveis pela validação de conectividade.
+
+## Implementações
+
+- `SqsHealthService`
+- `DynamoDbHealthService`
+
+---
+
+# Configuração
+
+A aplicação permite alteração dinâmica de configurações sem reinicialização.
+
+## Configurações suportadas
+
+- endpoint
+- região AWS
+- access key
+- secret key
+- TLS
+- configuração Redis
+
+## Componentes
+
+### AwsConfiguration
+
+Configuração principal da aplicação.
+
+### RedisConnectionConfiguration
+
+Configuração Redis.
+
+### ConfigController
+
+Tela/configuração dinâmica.
+
+---
+
+# Estrutura do Projeto
 
 ```text
-src/main/java
- └── br/com/scheiner/sqs/console
-      ├── config
-      ├── controller
-      ├── provider
-      ├── service
-      └── model
+src/main/java/br/com/scheiner/aws/console
+├── config
+├── controller
+├── dynamodb
+├── health
+├── model
+├── redirect
+├── service
+├── sqs
+└── utils
 ```
 
-## config
-
-Contém configurações da aplicação e integração com o ambiente AWS/LocalStack.
-
-## controller
-
-Responsável pela interação da interface JSF com as regras da aplicação.
-
-Os controllers controlam:
-
-- carregamento das filas
-- visualização de mensagens
-- publicação
-- purge
-- atualização da interface
-
-## provider
-
-Responsável pela criação e gerenciamento do client AWS SQS.
-
-## service
-
-Contém operações relacionadas ao SQS:
-
-- envio de mensagens
-- leitura de mensagens
-- purge
-- consulta de filas
-
-## model
-
-Objetos utilizados pela camada de apresentação.
-
 ---
 
-# Interface da aplicação
+# Execução
 
-A interface foi construída utilizando JSF + PrimeFaces.
-
-O sistema possui uma abordagem visual e operacional, permitindo interagir diretamente com as filas.
-
-Entre as funcionalidades disponíveis:
-
-## Listagem de filas
-
-A aplicação apresenta as filas disponíveis configuradas no ambiente.
-
-## Publicação de mensagens
-
-Mensagens podem ser enviadas diretamente pela interface.
-
-O sistema permite:
-
-- selecionar fila
-- informar payload
-- publicar mensagens no SQS
-
-## Visualização de mensagens
-
-As mensagens podem ser visualizadas diretamente pela interface.
-
-A tela exibe:
-
-- Message ID
-- payload
-- quantidade de leituras
-- detalhes da mensagem
-
-## Purge de filas
-
-A aplicação permite limpar filas diretamente pela interface.
-
-## Dialogs de visualização
-
-Os detalhes das mensagens podem ser visualizados em dialogs PrimeFaces.
-
----
-
-# Integração com LocalStack
-
-O projeto utiliza LocalStack para execução local dos serviços AWS.
-
-O ambiente é iniciado via Docker Compose.
-
-As filas utilizadas pela aplicação já são inicializadas automaticamente durante o ambiente local.
-
-Isso permite:
-
-- ambiente pronto para uso
-- testes locais rápidos
-- independência da AWS real
-- laboratório de mensageria
-
----
-
-# Fluxo da aplicação
-
-## Inicialização
-
-1. O LocalStack é iniciado
-2. As filas são criadas/configuradas
-3. A aplicação Spring Boot é iniciada
-4. A interface web fica disponível
-
-## Operação
-
-Através da interface é possível:
-
-- selecionar filas
-- enviar mensagens
-- visualizar mensagens
-- acompanhar mensagens existentes
-- limpar filas
-- inspecionar payloads
-
----
-
-# Tecnologias utilizadas
-
-| Tecnologia | Descrição |
-|---|---|
-| Java 21 | Linguagem principal |
-| Spring Boot 4 | Base da aplicação |
-| JoinFaces | Integração Spring Boot + JSF |
-| PrimeFaces | Componentes visuais |
-| AWS SDK v2 | Integração com SQS |
-| LocalStack | Simulação local AWS |
-| Docker | Execução do ambiente |
-
----
-
-# Como executar
-
-## Subir o ambiente
+## Build
 
 ```bash
-docker compose up -d
+mvn clean install
 ```
-
----
 
 ## Executar aplicação
 
 ```bash
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 ---
 
-## Acessar aplicação
-
-```text
-http://localhost:8080
-```
-
----
-
-# Objetivos do projeto
-
-O projeto foi criado com foco em:
-
-- estudos de AWS SQS
-- laboratório local
-- testes de mensageria
-- troubleshooting
-- administração visual de filas
-- demonstrações técnicas
-- experimentação com JSF + AWS SDK
-
----
-
-# Características do projeto
-
-- interface web administrativa
-- integração completa com SQS
-- operações visuais
-- ambiente local automatizado
-- integração com LocalStack
-- uso de JSF + PrimeFaces
-- arquitetura simples e direta
-
----
-
-# Licença
-
-Projeto para fins educacionais e laboratoriais.
