@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import br.com.scheiner.aws.console.config.SqsClientProvider;
+import br.com.scheiner.aws.console.sqs.SqsClientGateway;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
@@ -12,18 +12,18 @@ import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
 @Service
 public class SqsConsumerService {
 
-    private final SqsClientProvider sqsClientProvider;
+    private final SqsClientGateway sqsClientGateway;
 
-    public SqsConsumerService(SqsClientProvider sqsClientProvider) {
+    public SqsConsumerService(SqsClientGateway sqsClientGateway) {
 
-        this.sqsClientProvider = sqsClientProvider;
+        this.sqsClientGateway = sqsClientGateway;
     }
 
     public List<Message> consumirMensagens(String fila, Integer quantidadeMensagens) {
 
         var request =
                 ReceiveMessageRequest.builder()
-                        .queueUrl(this.sqsClientProvider.montarQueueUrl(fila))
+                        .queueUrl(this.sqsClientGateway.montarQueueUrl(fila))
                         .maxNumberOfMessages(quantidadeMensagens)
                         .visibilityTimeout(1)
                         .waitTimeSeconds(5)
@@ -33,6 +33,6 @@ public class SqsConsumerService {
                         .messageAttributeNames("All")
                         .build();
 
-        return this.sqsClientProvider.getClient().receiveMessage(request).messages();
+        return this.sqsClientGateway.getClient().receiveMessage(request).messages();
     }
 }

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import br.com.scheiner.aws.console.config.DynamoDbClientProvider;
+import br.com.scheiner.aws.console.dynamodb.DynamoDbClientGateway;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
@@ -18,16 +18,16 @@ import software.amazon.awssdk.services.dynamodb.model.TableDescription;
 @Service
 public class DynamodbService {
 	
-    private final DynamoDbClientProvider dynamoDbClientProvider;
+    private final DynamoDbClientGateway dynamoDbClientGateway;
 
-	public DynamodbService(DynamoDbClientProvider dynamoDbClientProvider) {
+	public DynamodbService(DynamoDbClientGateway dynamoDbClientGateway) {
 		super();
-		this.dynamoDbClientProvider = dynamoDbClientProvider;
+		this.dynamoDbClientGateway = dynamoDbClientGateway;
 	}
     
 	public List<String> buscarTabelas() {
 
-		 var response = this.dynamoDbClientProvider
+		 var response = this.dynamoDbClientGateway
                  .getClient()
                  .listTables(
                          ListTablesRequest.builder().build()
@@ -37,7 +37,7 @@ public class DynamodbService {
     }
 
 	public TableDescription descreverTabela(String nomeTabela) {
-		return this.dynamoDbClientProvider
+		return this.dynamoDbClientGateway
 				.getClient()
 				.describeTable(
 						DescribeTableRequest.builder()
@@ -48,7 +48,7 @@ public class DynamodbService {
 	}
 
 	public List<Map<String, AttributeValue>> buscarItens(String nomeTabela) {
-		var response = this.dynamoDbClientProvider
+		var response = this.dynamoDbClientGateway
 				.getClient()
 				.scan(
 						ScanRequest.builder()
@@ -60,7 +60,7 @@ public class DynamodbService {
 	}
 
 	public void salvarItem(String nomeTabela, Map<String, AttributeValue> item) {
-		this.dynamoDbClientProvider
+		this.dynamoDbClientGateway
 				.getClient()
 				.putItem(
 						PutItemRequest.builder()
@@ -71,7 +71,7 @@ public class DynamodbService {
 	}
 
 	public Map<String, AttributeValue> buscarItem(String nomeTabela, Map<String, AttributeValue> chave) {
-		return this.dynamoDbClientProvider
+		return this.dynamoDbClientGateway
 				.getClient()
 				.getItem(
 						GetItemRequest.builder()
@@ -83,7 +83,7 @@ public class DynamodbService {
 	}
 
 	public void excluirItem(String nomeTabela, Map<String, AttributeValue> chave) {
-		this.dynamoDbClientProvider
+		this.dynamoDbClientGateway
 				.getClient()
 				.deleteItem(
 						DeleteItemRequest.builder()

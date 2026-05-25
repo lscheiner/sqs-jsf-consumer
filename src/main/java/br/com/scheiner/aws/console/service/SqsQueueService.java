@@ -4,23 +4,23 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import br.com.scheiner.aws.console.config.SqsClientProvider;
+import br.com.scheiner.aws.console.sqs.SqsClientGateway;
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
 
 @Service
 public class SqsQueueService {
 
-    private final SqsClientProvider sqsClientProvider;
+    private final SqsClientGateway sqsClientGateway;
 
-    public SqsQueueService(SqsClientProvider sqsClientProvider) {
-        this.sqsClientProvider = sqsClientProvider;
+    public SqsQueueService(SqsClientGateway sqsClientGateway) {
+        this.sqsClientGateway = sqsClientGateway;
     }
 
     public List<String> listarFilas() {
 
-        return this.sqsClientProvider.getClient().listQueues().queueUrls()
+        return this.sqsClientGateway.getClient().listQueues().queueUrls()
                 .stream()
-                .map(this.sqsClientProvider::extrairNomeFila)
+                .map(this.sqsClientGateway::extrairNomeFila)
                 .sorted()
                 .toList();
     }
@@ -28,10 +28,10 @@ public class SqsQueueService {
     public void purgeFila(String fila) {
 
     	 final var request = PurgeQueueRequest.builder()
-                 .queueUrl(this.sqsClientProvider.montarQueueUrl(fila))
+                 .queueUrl(this.sqsClientGateway.montarQueueUrl(fila))
                  .build();
     	 
-         this.sqsClientProvider.getClient().purgeQueue(request);
+         this.sqsClientGateway.getClient().purgeQueue(request);
     }
 
    

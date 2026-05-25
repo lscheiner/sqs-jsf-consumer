@@ -4,29 +4,29 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import br.com.scheiner.aws.console.config.SqsClientProvider;
+import br.com.scheiner.aws.console.sqs.SqsClientGateway;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
 @Service
 public class SqsProducerService {
 
-    private final SqsClientProvider sqsClientProvider;
+    private final SqsClientGateway sqsClientGateway;
 
-    public SqsProducerService( SqsClientProvider sqsClientProvider ) {
-        this.sqsClientProvider = sqsClientProvider;
+    public SqsProducerService(SqsClientGateway sqsClientGateway) {
+        this.sqsClientGateway = sqsClientGateway;
     }
 
     public void enviarMensagem(String fila, String payload) {
 
         final var request =
                 SendMessageRequest.builder()
-                        .queueUrl(this.sqsClientProvider.montarQueueUrl(fila))
+                        .queueUrl(this.sqsClientGateway.montarQueueUrl(fila))
                         .messageBody(payload)
                         .messageAttributes(this.montarAttributes())
                         .build();
 
-        this.sqsClientProvider.getClient().sendMessage(request);
+        this.sqsClientGateway.getClient().sendMessage(request);
     }
 
     private Map<String, MessageAttributeValue> montarAttributes() {
