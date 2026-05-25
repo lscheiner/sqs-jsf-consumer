@@ -1,5 +1,68 @@
 # AWS Console
 
+<p align="center">
+
+<img src="https://github.com/lscheiner/sqs-jsf-consumer/actions/workflows/pipeline.yml/badge.svg" alt="Pipeline Java"/>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=alert_status" alt="Quality Gate"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=coverage" alt="Coverage"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=bugs" alt="Bugs"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=vulnerabilities" alt="Vulnerabilities"/>
+</a>
+
+</p>
+
+<p align="center">
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=code_smells" alt="Code Smells"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=duplicated_lines_density" alt="Duplicated Lines"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=ncloc" alt="Lines of Code"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=reliability_rating" alt="Reliability"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=security_rating" alt="Security"/>
+</a>
+
+<a href="https://sonarcloud.io/summary/new_code?id=lscheiner_sqs-jsf-consumer">
+  <img src="https://sonarcloud.io/api/project_badges/measure?project=lscheiner_sqs-jsf-consumer&metric=sqale_rating" alt="Maintainability"/>
+</a>
+
+</p>
+
+<p align="center">
+
+<img src="https://img.shields.io/badge/Java-21-orange?logo=openjdk" alt="Java 21"/>
+<img src="https://img.shields.io/badge/Spring_Boot-3.x-6DB33F?logo=springboot" alt="Spring Boot"/>
+<img src="https://img.shields.io/badge/JSF-PrimeFaces-blue" alt="JSF"/>
+<img src="https://img.shields.io/badge/AWS-SDK_v2-FF9900?logo=amazonaws" alt="AWS SDK"/>
+<img src="https://img.shields.io/badge/Redis-Jedis-red?logo=redis" alt="Redis"/>
+<img src="https://img.shields.io/badge/Docker-enabled-2496ED?logo=docker" alt="Docker"/>
+
+</p>
+
+---
+
 Aplicação Java desenvolvida com Spring Boot + JSF + PrimeFaces para gerenciamento de recursos AWS/local.
 
 O projeto possui interface web para administração de:
