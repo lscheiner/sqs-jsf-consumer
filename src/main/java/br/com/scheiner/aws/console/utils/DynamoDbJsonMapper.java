@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,8 +38,8 @@ public final class DynamoDbJsonMapper {
 		}
 	}
 
-	public static Map<String, AttributeValue> fromJson(String json) throws Exception {
-		JsonNode raiz = OBJECT_MAPPER.readTree(json);
+	public static Map<String, AttributeValue> fromJson(String json) throws JsonProcessingException  {
+		var raiz = OBJECT_MAPPER.readTree(json);
 		Map<String, AttributeValue> item = new LinkedHashMap<>();
 
 		raiz.properties().forEach(campo -> item.put(campo.getKey(), fromJsonValue(campo.getValue())));
