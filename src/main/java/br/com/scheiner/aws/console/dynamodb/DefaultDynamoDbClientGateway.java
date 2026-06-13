@@ -43,7 +43,7 @@ public class DefaultDynamoDbClientGateway implements DynamoDbClientGateway, AwsP
 
 	@Override
 	public boolean isConectado() {
-		return this.dynamoDbHealthService.isConectado(this.getClient());
+		return this.dynamoDbHealthService.isConectado(this);
 	}
 
 	@Override
