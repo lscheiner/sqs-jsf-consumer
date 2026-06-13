@@ -199,11 +199,9 @@
                     Serviços
                 </div>
 
-                <h:link outcome="/sqs"  styleClass="menu-item #{view.viewId eq '/sqs.xhtml' ? 'active' : ''}" >
-                    <i class="pi pi-send"></i>
-                    <span>
-                        SQS
-                    </span>
+                <h:link outcome="/sqs-explorer"  styleClass="menu-item #{view.viewId eq '/sqs-explorer.xhtml' ? 'active' : ''}" >
+                    <i class="pi pi-search"></i>
+                    <h:outputText value="SQS" />
                 </h:link>
 
                 <h:link outcome="/dynamodb" styleClass="menu-item #{view.viewId eq '/dynamodb.xhtml' ? 'active' : ''}">

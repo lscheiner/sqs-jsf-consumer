@@ -21,7 +21,7 @@ public class RedirectServlet extends HttpServlet {
                          HttpServletResponse response) {
 
         try {
-            response.sendRedirect(request.getContextPath() + "/sqs.xhtml");
+            response.sendRedirect(request.getContextPath() + "/sqs-explorer.xhtml");
         } catch (IOException exception) {
             LOGGER.error("Erro redirecting to index.xhtml", exception);
         }
