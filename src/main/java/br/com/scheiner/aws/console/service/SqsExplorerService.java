@@ -1,6 +1,7 @@
 package br.com.scheiner.aws.console.service;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class SqsExplorerService {
 				.listQueues(ListQueuesRequest.builder().build())
 				.queueUrls();
 		var atributosPorUrl = new LinkedHashMap<String, Map<QueueAttributeName, String>>();
-		var dlqArns = new java.util.HashSet<String>();
+		var dlqArns = new HashSet<String>();
 
 		urls.forEach(url -> {
 			var atributos = this.buscarAtributos(url);
