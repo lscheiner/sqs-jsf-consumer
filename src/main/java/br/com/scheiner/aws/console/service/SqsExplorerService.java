@@ -1,5 +1,6 @@
 package br.com.scheiner.aws.console.service;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -52,9 +53,11 @@ public class SqsExplorerService {
 	}
 
 	public List<SqsExplorerQueue> listarFilas() {
+		
 		var urls = this.sqsClientGateway.getClient()
 				.listQueues(ListQueuesRequest.builder().build())
 				.queueUrls();
+		
 		var atributosPorUrl = new LinkedHashMap<String, Map<QueueAttributeName, String>>();
 		var dlqArns = new HashSet<String>();
 
@@ -66,19 +69,21 @@ public class SqsExplorerService {
 
 		return urls.stream()
 				.map(url -> this.criarQueueResumo(url, atributosPorUrl.get(url), dlqArns))
-				.sorted((a, b) -> a.getNome().compareToIgnoreCase(b.getNome()))
+				.sorted(Comparator.comparing(
+				        SqsExplorerQueue::getNome,
+				        String.CASE_INSENSITIVE_ORDER))
 				.toList();
 	}
 
 	public SqsQueueDetails buscarDetalhes(String queueUrl) {
-		var atributos = this.buscarAtributos(queueUrl);
+		
 		var detalhes = new SqsQueueDetails();
-		var arn = atributos.get(QueueAttributeName.QUEUE_ARN);
+		var atributos = this.buscarAtributos(queueUrl);
 		var dlqArn = this.extrairDlqArn(atributos).orElse(null);
 
 		detalhes.setNome(this.sqsClientGateway.extrairNomeFila(queueUrl));
 		detalhes.setUrl(queueUrl);
-		detalhes.setArn(arn);
+		detalhes.setArn(atributos.get(QueueAttributeName.QUEUE_ARN));
 		detalhes.setTipo(this.tipoFila(queueUrl, atributos));
 		detalhes.setVisibilityTimeout(atributos.get(QueueAttributeName.VISIBILITY_TIMEOUT));
 		detalhes.setMessageRetentionPeriod(atributos.get(QueueAttributeName.MESSAGE_RETENTION_PERIOD));
@@ -96,6 +101,7 @@ public class SqsExplorerService {
 	}
 
 	public List<SqsExplorerMessage> buscarMensagens(String queueUrl , Integer waitTimeSeconds) {
+		
 		var response = this.sqsClientGateway.getClient().receiveMessage(
 				ReceiveMessageRequest.builder()
 						.queueUrl(queueUrl)
@@ -176,8 +182,9 @@ public class SqsExplorerService {
 	}
 
 	private SqsExplorerMessage criarMensagem(Message message) {
+		
 		var mensagem = new SqsExplorerMessage();
-		var attributes = this.converterAttributes(message.attributesAsStrings());
+		var attributes = new LinkedHashMap<>(message.attributesAsStrings());
 
 		mensagem.setMessageId(message.messageId());
 		mensagem.setReceiptHandle(message.receiptHandle());
@@ -189,10 +196,6 @@ public class SqsExplorerService {
 		mensagem.setMessageAttributes(message.messageAttributes());
 
 		return mensagem;
-	}
-
-	private Map<String, String> converterAttributes(Map<String, String> attributes) {
-		return new LinkedHashMap<>(attributes);
 	}
 
 	private Map<String, MessageAttributeValue> converterMessageAttributes(String json) {
