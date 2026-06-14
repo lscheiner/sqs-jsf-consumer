@@ -94,13 +94,13 @@ public class SqsExplorerService {
 		return detalhes;
 	}
 
-	public List<SqsExplorerMessage> buscarMensagens(String queueUrl) {
+	public List<SqsExplorerMessage> buscarMensagens(String queueUrl , Integer waitTimeSeconds) {
 		var response = this.sqsClientGateway.getClient().receiveMessage(
 				ReceiveMessageRequest.builder()
 						.queueUrl(queueUrl)
 						.maxNumberOfMessages(MAX_MENSAGENS_RECEIVE)
 						.visibilityTimeout(VISIBILITY_TIMEOUT_EXPLORER)
-						.waitTimeSeconds(5)
+						.waitTimeSeconds(waitTimeSeconds)
 						.attributeNames(
                                 QueueAttributeName.ALL
                          )

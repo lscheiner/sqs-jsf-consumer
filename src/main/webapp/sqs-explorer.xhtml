@@ -46,7 +46,7 @@
                                      rounded="true"
                                      process="@this"
                                      update="@form :growl"
-                                     action="#{sqsExplorerController.atualizarTudo}" />
+                                     action="#{sqsExplorerController.atualizarTudo()}" />
                 </div>
 
                 <h:panelGroup id="listaFilas" layout="block">
@@ -97,7 +97,7 @@
                                              icon="pi pi-refresh"
                                              process="@this"
                                              update="@form :growl"
-                                             action="#{sqsExplorerController.atualizarTudo}"
+                                             action="#{sqsExplorerController.atualizarTudo(5)}"
                                              outlined="true" />
 
                             <p:commandButton value="Purge Queue"

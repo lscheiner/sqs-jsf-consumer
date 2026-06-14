@@ -29,6 +29,8 @@ public class SqsExplorerController implements Controller {
 
 	private static final int PREVIEW_BODY = 140;
 
+	private static final int WAIT_TIME_SECONDS = 1;
+	
 	private final SqsExplorerService sqsExplorerService;
 
 	private List<SqsExplorerQueue> filas = new ArrayList<>();
@@ -79,21 +81,29 @@ public class SqsExplorerController implements Controller {
 	}
 
 	public void atualizarTudo() {
+		this.atualizarTudo(WAIT_TIME_SECONDS);
+	}
+	
+	public void atualizarTudo(Integer waitTimeSeconds) {
 		this.carregarFilas();
 
 		if (this.filaSelecionada != null) {
 			this.carregarDetalhesFila();
-			this.buscarMensagens();
+			this.buscarMensagens(waitTimeSeconds);
 		}
 	}
 
 	public void buscarMensagens() {
+		this.buscarMensagens(WAIT_TIME_SECONDS);	
+	}
+	
+	public void buscarMensagens(Integer waitTimeSeconds) {
 		if (this.filaSelecionada == null) {
 			return;
 		}
 
 		try {
-			this.mensagens = new ArrayList<>(this.sqsExplorerService.buscarMensagens(this.filaSelecionada.getUrl()));
+			this.mensagens = new ArrayList<>(this.sqsExplorerService.buscarMensagens(this.filaSelecionada.getUrl(), waitTimeSeconds));
 		} catch (Exception e) {
 			LOGGER.error("Erro buscando mensagens da fila {}", this.filaSelecionada.getNome(), e);
 			this.mensagens = new ArrayList<>();
@@ -118,7 +128,7 @@ public class SqsExplorerController implements Controller {
 					this.messageAttributesEnvio);
 			this.bodyEnvio = null;
 			this.messageAttributesEnvio = null;
-			this.atualizarTudo();
+			this.atualizarTudo(5);
 			this.adicionarMensagem(FacesMessage.SEVERITY_INFO, "Mensagem enviada", "Mensagem enviada com sucesso.");
 		} catch (Exception e) {
 			LOGGER.error("Erro enviando mensagem para fila {}", this.filaSelecionada.getNome(), e);
