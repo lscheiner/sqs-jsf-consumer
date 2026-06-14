@@ -7,8 +7,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -199,7 +201,7 @@ public class SqsExplorerService {
 	}
 
 	private Map<String, MessageAttributeValue> converterMessageAttributes(String json) {
-		if (json == null || json.isBlank()) {
+		if (!StringUtils.hasText(json)) {
 			return this.montarAttributesPadrao();
 		}
 
@@ -234,37 +236,37 @@ public class SqsExplorerService {
 				.build();
 	}
 
-	private java.util.Optional<String> extrairDlqArn(Map<QueueAttributeName, String> atributos) {
+	private Optional<String> extrairDlqArn(Map<QueueAttributeName, String> atributos) {
 		return this.extrairRedrivePolicy(atributos)
 				.map(policy -> policy.path("deadLetterTargetArn").asText(null))
 				.filter(Objects::nonNull);
 	}
 
-	private java.util.Optional<String> extrairMaxReceiveCount(Map<QueueAttributeName, String> atributos) {
+	private Optional<String> extrairMaxReceiveCount(Map<QueueAttributeName, String> atributos) {
 		return this.extrairRedrivePolicy(atributos)
 				.map(policy -> policy.path("maxReceiveCount").asText(null))
 				.filter(Objects::nonNull);
 	}
 
-	private java.util.Optional<JsonNode> extrairRedrivePolicy(Map<QueueAttributeName, String> atributos) {
+	private Optional<JsonNode> extrairRedrivePolicy(Map<QueueAttributeName, String> atributos) {
 		var redrivePolicy = atributos.get(QueueAttributeName.REDRIVE_POLICY);
 
-		if (redrivePolicy == null || redrivePolicy.isBlank()) {
-			return java.util.Optional.empty();
+		if (!StringUtils.hasText(redrivePolicy)) {
+			return Optional.empty();
 		}
 
 		try {
-			return java.util.Optional.of(OBJECT_MAPPER.readTree(redrivePolicy));
+			return Optional.of(OBJECT_MAPPER.readTree(redrivePolicy));
 		} catch (Exception e) {
-			return java.util.Optional.empty();
+			return Optional.empty();
 		}
 	}
 
-	private java.util.Optional<String> buscarFilaOriginal(String dlqUrl) {
+	private Optional<String> buscarFilaOriginal(String dlqUrl) {
 		var dlqArn = this.buscarAtributos(dlqUrl).get(QueueAttributeName.QUEUE_ARN);
 
 		if (dlqArn == null) {
-			return java.util.Optional.empty();
+			return Optional.empty();
 		}
 
 		return this.sqsClientGateway.getClient()
@@ -276,7 +278,8 @@ public class SqsExplorerService {
 	}
 
 	private String nomeFilaPorArn(String arn) {
-		if (arn == null || arn.isBlank()) {
+		
+		if (!StringUtils.hasText(arn)) {
 			return null;
 		}
 
