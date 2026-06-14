@@ -1,0 +1,398 @@
+﻿<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	template="template/template.xhtml">
+
+<ui:define name="content">
+
+    <div class="page-header">
+        <div class="page-title">
+            SQS Explorer
+        </div>
+
+        <div class="page-subtitle">
+            Helper para inspeção e manipulação de filas SQS no LocalStack
+        </div>
+    </div>
+
+    <h:form id="formSqsExplorer">
+
+        <p:poll interval="#{sqsExplorerController.intervaloAtualizacao}"
+                rendered="#{sqsExplorerController.atualizacaoAutomaticaHabilitada}"
+                listener="#{sqsExplorerController.atualizarTudo}"
+                update="@form :growl" />
+
+        <div style="display:grid; grid-template-columns: 320px minmax(0, 1fr); gap:1.25rem;">
+
+            <p:panel header="Filas SQS">
+
+                <div class="ui-fluid" style="margin-bottom:1rem;">
+                    <p:inputText id="buscaFila"
+                                 value="#{sqsExplorerController.filtroFila}"
+                                 placeholder="Buscar fila por nome...">
+                        <p:ajax event="keyup" update="listaFilas" />
+                    </p:inputText>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
+                    <h:outputText value="#{sqsExplorerController.filasFiltradas.size()} fila(s)" style="color:var(--text-color-secondary);" />
+
+                    <p:commandButton icon="pi pi-refresh"
+                                     title="Refresh"
+                                     rounded="true"
+                                     process="@this"
+                                     update="@form :growl"
+                                     action="#{sqsExplorerController.atualizarTudo}" />
+                </div>
+
+                <h:panelGroup id="listaFilas" layout="block">
+                    <ui:repeat value="#{sqsExplorerController.filasFiltradas}" var="fila">
+                        <p:commandLink process="@this"
+                                       update="@form :growl"
+                                       action="#{sqsExplorerController.selecionarFila(fila)}"
+                                       style="display:block; text-decoration:none; color:inherit;">
+
+                            <div style="border:1px solid var(--surface-border);
+                                        border-radius:10px;
+                                        padding:.85rem;
+                                        margin-bottom:.65rem;
+                                        background:#fff;">
+
+                                <div style="display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start;">
+                                    <h:outputText value="#{fila.nome}" style="font-weight:700; font-family:monospace;" />
+                                    <p:tag value="DLQ" severity="warning" rendered="#{fila.dlq}" />
+                                </div>
+
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:.6rem;">
+                                    <p:tag value="#{fila.tipo}" severity="#{fila.tipo eq 'FIFO' ? 'info' : 'secondary'}" />
+                                    <h:outputText value="#{fila.quantidadeMensagens} msg" style="font-size:.9rem; color:var(--text-color-secondary);" />
+                                </div>
+
+                            </div>
+
+                        </p:commandLink>
+                    </ui:repeat>
+                </h:panelGroup>
+
+            </p:panel>
+
+            <p:panel header="#{sqsExplorerController.filaSelecionada != null ? sqsExplorerController.filaSelecionada.nome : 'Selecione uma fila'}">
+
+                <h:panelGroup rendered="#{empty sqsExplorerController.filaSelecionada}">
+                    <p:staticMessage severity="info"
+                                     summary="Nenhuma fila selecionada"
+                                     detail="Escolha uma fila no painel esquerdo para visualizar detalhes, mensagens e configurações." />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{not empty sqsExplorerController.filaSelecionada}">
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+
+                        <div style="display:flex; gap:.75rem; align-items:center; flex-wrap:wrap;">
+                            <p:commandButton value="Refresh"
+                                             icon="pi pi-refresh"
+                                             process="@this"
+                                             update="@form :growl"
+                                             action="#{sqsExplorerController.atualizarTudo}"
+                                             outlined="true" />
+
+                            <p:commandButton value="Purge Queue"
+                                             icon="pi pi-trash"
+                                             process="@this"
+                                             update="@form :growl"
+                                             action="#{sqsExplorerController.purgeFila}"
+                                             styleClass="ui-button-danger">
+                                <p:confirm header="Confirmar purge"
+                                           message="Deseja limpar todas as mensagens desta fila?"
+                                           icon="pi pi-exclamation-triangle" />
+                            </p:commandButton>
+
+                            <p:commandButton value="Abrir DLQ"
+                                             icon="pi pi-external-link"
+                                             process="@this"
+                                             update="@form :growl"
+                                             rendered="#{sqsExplorerController.detalhesFila.possuiDlq}"
+                                             action="#{sqsExplorerController.abrirDlq}" />
+                        </div>
+
+                        <div style="display:flex; gap:.5rem; align-items:center;">
+                            <h:outputText value="Auto refresh" style="font-weight:600;" />
+                            <p:selectOneMenu value="#{sqsExplorerController.intervaloAtualizacao}" style="width:150px;">
+                                <f:selectItem itemLabel="Desabilitado" itemValue="0" />
+                                <f:selectItem itemLabel="5 segundos" itemValue="5" />
+                                <f:selectItem itemLabel="10 segundos" itemValue="10" />
+                                <f:selectItem itemLabel="30 segundos" itemValue="30" />
+                                <p:ajax update="@form" />
+                            </p:selectOneMenu>
+                        </div>
+
+                    </div>
+
+                    <p:tabView id="tabDetalhes">
+
+                        <p:tab title="Informações">
+
+                            <div style="display:grid; grid-template-columns: 220px minmax(0, 1fr); gap:.75rem 1rem;">
+                                <strong>Queue Name</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.nome}" />
+
+                                <strong>Queue URL</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.url}" style="font-family:monospace; word-break:break-all;" />
+
+                                <strong>Queue ARN</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.arn}" style="font-family:monospace; word-break:break-all;" />
+
+                                <strong>Visibility Timeout</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.visibilityTimeout}" />
+
+                                <strong>Message Retention Period</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.messageRetentionPeriod}" />
+
+                                <strong>Receive Message Wait Time</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.receiveMessageWaitTime}" />
+
+                                <strong>Tipo</strong>
+                                <h:outputText value="#{sqsExplorerController.detalhesFila.tipo}" />
+                            </div>
+
+                            <p:divider />
+
+                            <h:panelGroup rendered="#{sqsExplorerController.detalhesFila.possuiDlq}">
+                                <h3 style="margin-top:0;">DLQ configurada</h3>
+
+                                <div style="display:grid; grid-template-columns: 220px minmax(0, 1fr); gap:.75rem 1rem;">
+                                    <strong>Nome da DLQ</strong>
+                                    <h:outputText value="#{sqsExplorerController.detalhesFila.dlqNome}" />
+
+                                    <strong>ARN da DLQ</strong>
+                                    <h:outputText value="#{sqsExplorerController.detalhesFila.dlqArn}" style="font-family:monospace; word-break:break-all;" />
+
+                                    <strong>Max Receive Count</strong>
+                                    <h:outputText value="#{sqsExplorerController.detalhesFila.maxReceiveCount}" />
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sqsExplorerController.detalhesFila.dlqComFilaOriginal}">
+                                <p:staticMessage severity="info"
+                                                 summary="Fila DLQ"
+                                                 detail="Esta DLQ está associada à fila #{sqsExplorerController.detalhesFila.filaOriginalNome}." 
+                                                 style="width:100%; margin-top:1rem;" />
+                            </h:panelGroup>
+
+                        </p:tab>
+
+                        <p:tab title="Mensagens">
+
+                            <p:dataTable id="tabelaMensagensExplorer"
+                                         value="#{sqsExplorerController.mensagens}"
+                                         var="mensagem"
+                                         paginator="true"
+                                         rows="10"
+                                         emptyMessage="Nenhuma mensagem visível nesta fila."
+                                         responsiveLayout="scroll">
+
+                                <p:column headerText="Message Id" style="width:260px;">
+                                    <h:outputText value="#{mensagem.messageId}" style="font-family:monospace;" />
+                                </p:column>
+
+                                <p:column headerText="Body">
+                                    <h:outputText value="#{sqsExplorerController.previewBody(mensagem.body)}" />
+                                </p:column>
+
+                                <p:column headerText="Sent Timestamp" style="width:160px;">
+                                    <h:outputText value="#{mensagem.sentTimestamp}" />
+                                </p:column>
+
+                                <p:column headerText="Receive Count" style="width:120px; text-align:center;">
+                                    <p:badge value="#{mensagem.receiveCount}" styleClass="ui-badge-info" />
+                                </p:column>
+
+                                <p:column headerText="Ações" style="width:210px; text-align:center;">
+                                    <p:commandButton icon="pi pi-eye"
+                                                     title="Abrir mensagem"
+                                                     rounded="true"
+                                                     process="@this"
+                                                     update=":dialogMensagemExplorerForm"
+                                                     oncomplete="PF('dialogMensagemExplorerWidget').show()"
+                                                     action="#{sqsExplorerController.visualizarMensagem(mensagem)}"
+                                                     style="margin-right:.35rem;" />
+
+                                    <p:commandButton icon="pi pi-replay"
+                                                     title="Reenviar para fila original"
+                                                     rounded="true"
+                                                     rendered="#{sqsExplorerController.detalhesFila.dlqComFilaOriginal}"
+                                                     process="@this"
+                                                     update="@form :growl"
+                                                     action="#{sqsExplorerController.reenviarParaFilaOriginal(mensagem)}"
+                                                     style="margin-right:.35rem;" />
+
+                                    <p:commandButton icon="pi pi-trash"
+                                                     title="Excluir mensagem"
+                                                     rounded="true"
+                                                     styleClass="ui-button-danger"
+                                                     process="@this"
+                                                     update="@form :growl"
+                                                     action="#{sqsExplorerController.excluirMensagem(mensagem)}" />
+                                </p:column>
+
+                            </p:dataTable>
+
+                            <p:divider />
+
+                            <p:panel header="Enviar mensagem">
+                                <div class="ui-fluid">
+                                    <div style="margin-bottom:1rem;">
+                                        <p:outputLabel for="bodyEnvio" value="Body JSON" style="font-weight:600;" />
+                                        <p:inputTextarea id="bodyEnvio"
+                                                         value="#{sqsExplorerController.bodyEnvio}"
+                                                         rows="10"
+                                                         autoResize="false"
+                                                         placeholder="{ }"
+                                                         style="margin-top:.5rem; font-family:monospace;" />
+                                    </div>
+
+                                    <div style="margin-bottom:1rem;">
+                                        <p:outputLabel for="messageAttributesEnvio" value="Message Attributes JSON opcional" style="font-weight:600;" />
+                                        <p:inputTextarea id="messageAttributesEnvio"
+                                                         value="#{sqsExplorerController.messageAttributesEnvio}"
+                                                         rows="5"
+                                                         autoResize="false"
+                                                         placeholder="{ &quot;content-type&quot;: { &quot;dataType&quot;: &quot;String&quot;, &quot;stringValue&quot;: &quot;application/json&quot; } }"
+                                                         style="margin-top:.5rem; font-family:monospace;" />
+                                    </div>
+
+                                    <div style="display:flex; justify-content:flex-end;">
+                                        <p:commandButton value="Enviar"
+                                                         icon="pi pi-send"
+                                                         process="@form"
+                                                         update="@form :growl"
+                                                         action="#{sqsExplorerController.enviarMensagem}"
+                                                         style="width:auto; min-width:160px; font-weight:600;" />
+                                    </div>
+                                </div>
+                            </p:panel>
+
+                        </p:tab>
+
+
+                    </p:tabView>
+
+                </h:panelGroup>
+
+            </p:panel>
+
+        </div>
+
+    </h:form>
+
+</ui:define>
+
+<ui:define name="dialogs">
+
+    <h:form id="dialogMensagemExplorerForm">
+
+        <p:dialog id="dialogMensagemExplorer"
+                  widgetVar="dialogMensagemExplorerWidget"
+                  header="Mensagem SQS"
+                  modal="true"
+                  responsive="true"
+                  closable="true"
+                  width="90vw"
+                  height="90vh"
+                  styleClass="dialog-sqs-json">
+
+            <p:tabView>
+
+                <p:tab title="Body / Replay">
+                    <div style="display:flex; justify-content:flex-end; gap:.75rem; margin-bottom:.75rem;">
+                        <p:commandButton type="button"
+                                         value="Copiar mensagem"
+                                         icon="pi pi-copy"
+                                         onclick="copiarMensagemExplorer();" />
+
+                        <p:commandButton value="Download JSON"
+                                         icon="pi pi-download"
+                                         ajax="false">
+                            <p:fileDownload value="#{sqsExplorerController.downloadMensagem}" />
+                        </p:commandButton>
+
+                        <p:commandButton value="Reenviar"
+                                         icon="pi pi-replay"
+                                         process="@form"
+                                         update=":formSqsExplorer :growl"
+                                         action="#{sqsExplorerController.reenviarMensagem}" />
+                    </div>
+
+                    <pe:codeMirror id="bodyReplay"
+                                   value="#{sqsExplorerController.bodyReplay}"
+                                   mode="javascript"
+                                   theme="dracula"
+                                   lineNumbers="true"
+                                   matchBrackets="true"
+                                   style="height:68vh; border:none;" />
+                </p:tab>
+
+                <p:tab title="Attributes">
+                    <p:dataTable value="#{sqsExplorerController.mensagemSelecionadaAttributes.entrySet().toArray()}"
+                                 var="attr"
+                                 emptyMessage="Nenhum atributo encontrado"
+                                 responsiveLayout="scroll">
+                        <p:column headerText="Attribute">
+                            <h:outputText value="#{attr.key}" style="font-weight:bold;" />
+                        </p:column>
+                        <p:column headerText="Value">
+                            <h:outputText value="#{attr.value}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+
+                <p:tab title="Message Attributes">
+                    <p:dataTable value="#{sqsExplorerController.mensagemSelecionadaMessageAttributes.entrySet().toArray()}"
+                                 var="attr"
+                                 emptyMessage="Nenhum message attribute encontrado"
+                                 responsiveLayout="scroll">
+                        <p:column headerText="Attribute">
+                            <h:outputText value="#{attr.key}" style="font-weight:bold;" />
+                        </p:column>
+                        <p:column headerText="Type">
+                            <h:outputText value="#{attr.value.dataType()}" />
+                        </p:column>
+                        <p:column headerText="Value">
+                            <h:outputText value="#{attr.value.stringValue()}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:tab>
+
+            </p:tabView>
+
+        </p:dialog>
+
+        <h:outputScript target="body">
+            function copiarMensagemExplorer() {
+                const editorElement = document.querySelector('#dialogMensagemExplorerForm .CodeMirror');
+                if (editorElement &amp;&amp; editorElement.CodeMirror) {
+                    navigator.clipboard.writeText(editorElement.CodeMirror.getValue());
+                }
+            }
+        </h:outputScript>
+
+    </h:form>
+
+    <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+        <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no ui-button-flat" />
+        <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes ui-button-danger" />
+    </p:confirmDialog>
+
+    <h:outputStylesheet>
+        .dialog-sqs-json .CodeMirror {
+            font-size: 14px;
+        }
+    </h:outputStylesheet>
+
+</ui:define>
+
+</ui:composition>
