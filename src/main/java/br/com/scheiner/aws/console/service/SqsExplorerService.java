@@ -100,8 +100,10 @@ public class SqsExplorerService {
 						.queueUrl(queueUrl)
 						.maxNumberOfMessages(MAX_MENSAGENS_RECEIVE)
 						.visibilityTimeout(VISIBILITY_TIMEOUT_EXPLORER)
-						.waitTimeSeconds(1)
-						.attributeNames(QueueAttributeName.ALL)
+						.waitTimeSeconds(5)
+						.attributeNames(
+                                QueueAttributeName.ALL
+                         )
 						.messageAttributeNames("All")
 						.build());
 
