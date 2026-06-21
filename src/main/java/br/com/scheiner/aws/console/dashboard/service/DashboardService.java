@@ -30,10 +30,10 @@ public class DashboardService {
 	}
 
 	public DashboardData load() {
+		
 		var resourceInfos = new EnumMap<ResourceType, ResourceInfo>(ResourceType.class);
 
-		this.providers.forEach(provider ->
-				resourceInfos.put(provider.getType(), this.load(provider)));
+		this.providers.forEach(provider -> resourceInfos.put(provider.getType(), this.load(provider)));
 
 		var data = new DashboardData();
 
@@ -42,7 +42,8 @@ public class DashboardService {
 		resourceInfos.forEach((type, resourceInfo) ->
 				resources.put(type,
 						resourceInfo.getResources().stream()
-								.map(resource -> ResourceNode.resource(
+								.map(resource -> 
+								ResourceNode.resource(
 										resource.getType(),
 										resource.getName(),
 										resource.getIdentifier()))
@@ -74,10 +75,10 @@ public class DashboardService {
 		var sns = this.getResourceInfo(resourceInfos, ResourceType.SNS);
 		
 		var summary = new DashboardSummary();
-		summary.setSqsQueueCount(Math.toIntExact(sqs.getCount()));
-		summary.setDynamoTableCount(Math.toIntExact(dynamodb.getCount()));
-		summary.setSnsTopicCount(Math.toIntExact(sns.getCount()));
-		summary.setRedisKeyCount(redis.getCount());
+		summary.setSqsQueueCount(sqs.getCountAsInt());
+		summary.setDynamoTableCount(dynamodb.getCountAsInt());
+		summary.setSnsTopicCount(sns.getCountAsInt());
+		summary.setRedisKeyCount(redis.getCountAsInt());
 		summary.setLocalstackStatus(this.localstackStatus(sqs, dynamodb));
 		summary.setRedisStatus(redis.getStatus());
 		summary.setLocalstackEndpoint(this.awsConfiguration.getEndpoint());

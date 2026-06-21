@@ -50,4 +50,8 @@ public class ResourceInfo {
 	public void setResources(List<ResourceDescriptor> resources) {
 		this.resources = resources;
 	}
+	
+	public int getCountAsInt() {
+		return Math.toIntExact(this.count);
+	}
 }
