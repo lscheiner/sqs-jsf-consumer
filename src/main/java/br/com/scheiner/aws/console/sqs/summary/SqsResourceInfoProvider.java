@@ -6,15 +6,15 @@ import br.com.scheiner.aws.console.resource.model.ResourceDescriptor;
 import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
-import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
+import br.com.scheiner.aws.console.resource.provider.ResourceInfoProvider;
 import br.com.scheiner.aws.console.sqs.service.SqsExplorerService;
 
 @Service
-public class SqsResourceSummaryProvider implements ResourceSummaryProvider {
+public class SqsResourceInfoProvider implements ResourceInfoProvider {
 
 	private final SqsExplorerService sqsExplorerService;
 
-	public SqsResourceSummaryProvider(SqsExplorerService sqsExplorerService) {
+	public SqsResourceInfoProvider(SqsExplorerService sqsExplorerService) {
 		this.sqsExplorerService = sqsExplorerService;
 	}
 

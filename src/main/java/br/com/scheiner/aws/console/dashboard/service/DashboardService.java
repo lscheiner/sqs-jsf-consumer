@@ -14,17 +14,17 @@ import br.com.scheiner.aws.console.dashboard.model.ResourceNode;
 import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
-import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
+import br.com.scheiner.aws.console.resource.provider.ResourceInfoProvider;
 
 @Service
 public class DashboardService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DashboardService.class);
 
-	private final List<ResourceSummaryProvider> providers;
+	private final List<ResourceInfoProvider> providers;
 	private final AwsConfiguration awsConfiguration;
 
-	public DashboardService(List<ResourceSummaryProvider> providers, AwsConfiguration awsConfiguration) {
+	public DashboardService(List<ResourceInfoProvider> providers, AwsConfiguration awsConfiguration) {
 		this.providers = providers;
 		this.awsConfiguration = awsConfiguration;
 	}
@@ -54,7 +54,7 @@ public class DashboardService {
 		return data;
 	}
 
-	private ResourceInfo load(ResourceSummaryProvider provider) {
+	private ResourceInfo load(ResourceInfoProvider provider) {
 		try {
 			return provider.load();
 		} catch (Exception exception) {

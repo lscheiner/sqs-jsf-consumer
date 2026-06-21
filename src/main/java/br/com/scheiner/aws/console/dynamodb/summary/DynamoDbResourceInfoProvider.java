@@ -7,14 +7,14 @@ import br.com.scheiner.aws.console.resource.model.ResourceDescriptor;
 import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
-import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
+import br.com.scheiner.aws.console.resource.provider.ResourceInfoProvider;
 
 @Service
-public class DynamoDbResourceSummaryProvider implements ResourceSummaryProvider {
+public class DynamoDbResourceInfoProvider implements ResourceInfoProvider {
 
 	private final DynamoDbService dynamodbService;
 
-	public DynamoDbResourceSummaryProvider(DynamoDbService dynamodbService) {
+	public DynamoDbResourceInfoProvider(DynamoDbService dynamodbService) {
 		this.dynamodbService = dynamodbService;
 	}
 

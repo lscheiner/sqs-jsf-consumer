@@ -9,14 +9,14 @@ import br.com.scheiner.aws.console.resource.model.ResourceDescriptor;
 import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
-import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
+import br.com.scheiner.aws.console.resource.provider.ResourceInfoProvider;
 
 @Service
-public class RedisResourceSummaryProvider implements ResourceSummaryProvider {
+public class RedisResourceInfoProvider implements ResourceInfoProvider {
 
 	private final RedisService redisService;
 
-	public RedisResourceSummaryProvider(RedisService redisService) {
+	public RedisResourceInfoProvider(RedisService redisService) {
 		this.redisService = redisService;
 	}
 
