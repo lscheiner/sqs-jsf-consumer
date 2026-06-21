@@ -1,12 +1,8 @@
 package br.com.scheiner.aws.console.dashboard.model;
 
-import java.io.Serializable;
-
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 
-public class ResourceNode implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class ResourceNode {
 
 	private ResourceType type;
 	private String name;

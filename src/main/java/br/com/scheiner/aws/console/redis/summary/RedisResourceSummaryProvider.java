@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.scheiner.aws.console.redis.service.RedisService;
 import br.com.scheiner.aws.console.resource.model.ResourceDescriptor;
-import br.com.scheiner.aws.console.resource.model.ResourceSnapshot;
+import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
 import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
@@ -26,16 +26,16 @@ public class RedisResourceSummaryProvider implements ResourceSummaryProvider {
 	}
 
 	@Override
-	public ResourceSnapshot load() {
+	public ResourceInfo load() {
 		var configuration = this.redisService.carregarConfiguracao();
 		var address = "%s:%d".formatted(configuration.getHost(), configuration.getPort());
 		var connected = this.redisService.testarConexao();
-		var snapshot = new ResourceSnapshot();
-		snapshot.setType(this.getType());
-		snapshot.setStatus(connected ? ServiceStatus.CONNECTED : ServiceStatus.DISCONNECTED);
-		snapshot.setConfiguredAddress(address);
-		snapshot.setCount(connected ? this.redisService.contarChaves() : 0L);
-		snapshot.setResources(List.of(new ResourceDescriptor(this.getType(), address, address)));
-		return snapshot;
+		var resourceInfo = new ResourceInfo();
+		resourceInfo.setType(this.getType());
+		resourceInfo.setStatus(connected ? ServiceStatus.CONNECTED : ServiceStatus.DISCONNECTED);
+		resourceInfo.setConfiguredAddress(address);
+		resourceInfo.setCount(connected ? this.redisService.contarChaves() : 0L);
+		resourceInfo.setResources(List.of(new ResourceDescriptor(this.getType(), address, address)));
+		return resourceInfo;
 	}
 }

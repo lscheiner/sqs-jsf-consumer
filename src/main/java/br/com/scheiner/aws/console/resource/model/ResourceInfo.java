@@ -3,7 +3,7 @@ package br.com.scheiner.aws.console.resource.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResourceSnapshot {
+public class ResourceInfo {
 
 	private ResourceType type;
 	private ServiceStatus status;

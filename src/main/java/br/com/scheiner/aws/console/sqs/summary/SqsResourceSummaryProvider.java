@@ -3,7 +3,7 @@ package br.com.scheiner.aws.console.sqs.summary;
 import org.springframework.stereotype.Service;
 
 import br.com.scheiner.aws.console.resource.model.ResourceDescriptor;
-import br.com.scheiner.aws.console.resource.model.ResourceSnapshot;
+import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
 import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
@@ -24,15 +24,15 @@ public class SqsResourceSummaryProvider implements ResourceSummaryProvider {
 	}
 
 	@Override
-	public ResourceSnapshot load() {
+	public ResourceInfo load() {
 		var queues = this.sqsExplorerService.listarFilas();
-		var snapshot = new ResourceSnapshot();
-		snapshot.setType(this.getType());
-		snapshot.setStatus(ServiceStatus.CONNECTED);
-		snapshot.setCount(queues.size());
-		snapshot.setResources(queues.stream()
+		var resourceInfo = new ResourceInfo();
+		resourceInfo.setType(this.getType());
+		resourceInfo.setStatus(ServiceStatus.CONNECTED);
+		resourceInfo.setCount(queues.size());
+		resourceInfo.setResources(queues.stream()
 				.map(queue -> new ResourceDescriptor(this.getType(), queue.getNome(), queue.getNome()))
 				.toList());
-		return snapshot;
+		return resourceInfo;
 	}
 }

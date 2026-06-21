@@ -11,7 +11,7 @@ import br.com.scheiner.aws.console.configuration.aws.AwsConfiguration;
 import br.com.scheiner.aws.console.dashboard.model.DashboardData;
 import br.com.scheiner.aws.console.dashboard.model.DashboardSummary;
 import br.com.scheiner.aws.console.dashboard.model.ResourceNode;
-import br.com.scheiner.aws.console.resource.model.ResourceSnapshot;
+import br.com.scheiner.aws.console.resource.model.ResourceInfo;
 import br.com.scheiner.aws.console.resource.model.ResourceType;
 import br.com.scheiner.aws.console.resource.model.ServiceStatus;
 import br.com.scheiner.aws.console.resource.provider.ResourceSummaryProvider;
@@ -30,37 +30,49 @@ public class DashboardService {
 	}
 
 	public DashboardData load() {
-		var snapshots = new EnumMap<ResourceType, ResourceSnapshot>(ResourceType.class);
-		this.providers.forEach(provider -> snapshots.put(provider.getType(), this.load(provider)));
+		var resourceInfos = new EnumMap<ResourceType, ResourceInfo>(ResourceType.class);
+
+		this.providers.forEach(provider ->
+				resourceInfos.put(provider.getType(), this.load(provider)));
 
 		var data = new DashboardData();
+
 		var resources = new EnumMap<ResourceType, List<ResourceNode>>(ResourceType.class);
-		snapshots.forEach((type, snapshot) -> resources.put(type, snapshot.getResources().stream()
-				.map(resource -> ResourceNode.resource(
-						resource.getType(), resource.getName(), resource.getIdentifier()))
-				.toList()));
+
+		resourceInfos.forEach((type, resourceInfo) ->
+				resources.put(type,
+						resourceInfo.getResources().stream()
+								.map(resource -> ResourceNode.resource(
+										resource.getType(),
+										resource.getName(),
+										resource.getIdentifier()))
+								.toList()));
+
 		data.setResources(resources);
-		data.setSummary(this.buildSummary(snapshots));
+		data.setSummary(this.buildSummary(resourceInfos));
+
 		return data;
 	}
 
-	private ResourceSnapshot load(ResourceSummaryProvider provider) {
+	private ResourceInfo load(ResourceSummaryProvider provider) {
 		try {
 			return provider.load();
 		} catch (Exception exception) {
 			LOGGER.warn("Nao foi possivel consultar {} para o Dashboard", provider.getType(), exception);
-			var unavailable = new ResourceSnapshot();
+			var unavailable = new ResourceInfo();
 			unavailable.setType(provider.getType());
 			unavailable.setStatus(ServiceStatus.UNAVAILABLE);
 			return unavailable;
 		}
 	}
 
-	private DashboardSummary buildSummary(EnumMap<ResourceType, ResourceSnapshot> snapshots) {
-		var sqs = this.getSnapshot(snapshots, ResourceType.SQS);
-		var dynamodb = this.getSnapshot(snapshots, ResourceType.DYNAMODB);
-		var redis = this.getSnapshot(snapshots, ResourceType.REDIS);
-		var sns = this.getSnapshot(snapshots, ResourceType.SNS);
+	private DashboardSummary buildSummary(EnumMap<ResourceType, ResourceInfo> resourceInfos) {
+		
+		var sqs = this.getResourceInfo(resourceInfos, ResourceType.SQS);
+		var dynamodb = this.getResourceInfo(resourceInfos, ResourceType.DYNAMODB);
+		var redis = this.getResourceInfo(resourceInfos, ResourceType.REDIS);
+		var sns = this.getResourceInfo(resourceInfos, ResourceType.SNS);
+		
 		var summary = new DashboardSummary();
 		summary.setSqsQueueCount(Math.toIntExact(sqs.getCount()));
 		summary.setDynamoTableCount(Math.toIntExact(dynamodb.getCount()));
@@ -73,18 +85,20 @@ public class DashboardService {
 		return summary;
 	}
 
-	private ResourceSnapshot getSnapshot(
-			EnumMap<ResourceType, ResourceSnapshot> snapshots, ResourceType type) {
-		return snapshots.computeIfAbsent(type, ignored -> {
-			var snapshot = new ResourceSnapshot();
-			snapshot.setType(type);
-			snapshot.setStatus(ServiceStatus.UNAVAILABLE);
-			return snapshot;
+	private ResourceInfo getResourceInfo(
+			EnumMap<ResourceType, ResourceInfo> resourceInfos,
+			ResourceType type) {
+
+		return resourceInfos.computeIfAbsent(type, ignored -> {
+			var resourceInfo = new ResourceInfo();
+			resourceInfo.setType(type);
+			resourceInfo.setStatus(ServiceStatus.UNAVAILABLE);
+			return resourceInfo;
 		});
 	}
 
 	private ServiceStatus localstackStatus(
-			ResourceSnapshot sqs, ResourceSnapshot dynamodb) {
+			ResourceInfo sqs, ResourceInfo dynamodb) {
 		if (sqs.getStatus() == ServiceStatus.CONNECTED || dynamodb.getStatus() == ServiceStatus.CONNECTED) {
 			return ServiceStatus.CONNECTED;
 		}
