@@ -44,19 +44,19 @@
         <section class="dashboard-section">
             <h2 class="dashboard-section-title">Resumo dos recursos</h2>
             <div class="dashboard-grid">
-				<p:commandLink action="#{dashboardController.openSqs}" ajax="false" styleClass="dashboard-card-link">
+				<p:commandLink action="#{dashboardController.abrir('SQS')}" ajax="false" styleClass="dashboard-card-link">
                     <p:card><f:facet name="title">SQS</f:facet>
                         <span style="font-size:1.75rem; font-weight:700;">#{dashboardController.summary.sqsQueueCount}</span>
                         <span style="margin-left:.4rem; color:var(--text-color-secondary);">filas</span>
                     </p:card>
                 </p:commandLink>
-				<p:commandLink action="#{dashboardController.openDynamoDb}" ajax="false" styleClass="dashboard-card-link">
+				<p:commandLink action="#{dashboardController.abrir('DYNAMODB')}" ajax="false" styleClass="dashboard-card-link">
                     <p:card><f:facet name="title">DynamoDB</f:facet>
                         <span style="font-size:1.75rem; font-weight:700;">#{dashboardController.summary.dynamoTableCount}</span>
                         <span style="margin-left:.4rem; color:var(--text-color-secondary);">tabelas</span>
                     </p:card>
                 </p:commandLink>
-				<p:commandLink action="#{dashboardController.openRedis}" ajax="false" styleClass="dashboard-card-link">
+				<p:commandLink action="#{dashboardController.abrir('REDIS')}" ajax="false" styleClass="dashboard-card-link">
                     <p:card><f:facet name="title">Redis</f:facet>
                         <span style="font-size:1.75rem; font-weight:700;">#{dashboardController.summary.redisKeyCount}</span>
                         <span style="margin-left:.4rem; color:var(--text-color-secondary);">chaves</span>

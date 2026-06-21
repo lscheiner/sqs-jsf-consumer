@@ -72,16 +72,8 @@ public class DashboardController implements Controller {
 		this.navigationManager.redirect(ApplicationRoute.from(resource.getType()), resource.getIdentifier());
 	}
 
-	public void openSqs() throws IOException {
-		this.navigationManager.redirect(ApplicationRoute.SQS);
-	}
-
-	public void openDynamoDb() throws IOException {
-		this.navigationManager.redirect(ApplicationRoute.DYNAMODB);
-	}
-
-	public void openRedis() throws IOException {
-		this.navigationManager.redirect(ApplicationRoute.REDIS);
+	public void abrir(String path) throws IOException {
+		this.navigationManager.redirect(ApplicationRoute.valueOf(path));
 	}
 
 	public DashboardSummary getSummary() {
