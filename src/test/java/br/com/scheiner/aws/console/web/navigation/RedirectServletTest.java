@@ -25,6 +25,9 @@ class RedirectServletTest {
 	}
 
 	private static class ServletTestavel extends RedirectServlet {
+
+		private static final long serialVersionUID = 1L;
+
 		void executarDoGet(HttpServletRequest request, HttpServletResponse response) {
 			super.doGet(request, response);
 		}

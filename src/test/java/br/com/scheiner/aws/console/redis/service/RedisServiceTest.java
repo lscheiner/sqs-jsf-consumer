@@ -1,8 +1,9 @@
 package br.com.scheiner.aws.console.redis.service;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -18,7 +19,8 @@ import io.lettuce.core.api.sync.RedisCommands;
 class RedisServiceTest {
 
 	private final RedisClientProvider provider = mock(RedisClientProvider.class);
-	private final RedisConnectionConfiguration configuracao = new RedisConnectionConfiguration("localhost", 6379, false, "", "");
+	private final RedisConnectionConfiguration configuracao =
+			new RedisConnectionConfiguration("localhost", 6379, false, "", "");
 	private final RedisService service = new RedisService(this.provider, this.configuracao);
 
 	@Test
@@ -57,6 +59,9 @@ class RedisServiceTest {
 		when(commands.set("chave", "valor")).thenReturn("OK");
 
 		this.service.salvarRegistro("chave", "valor", 0L);
+
+		verify(commands).set("chave", "valor");
+		verify(commands, never()).setex("chave", 0L, "valor");
 	}
 
 	@Test
@@ -67,6 +72,9 @@ class RedisServiceTest {
 		when(commands.setex("chave", 60L, "valor")).thenReturn("OK");
 
 		this.service.salvarRegistro("chave", "valor", 60L);
+
+		verify(commands).setex("chave", 60L, "valor");
+		verify(commands, never()).set("chave", "valor");
 	}
 
 	@Test
@@ -77,6 +85,8 @@ class RedisServiceTest {
 		when(commands.del("chave")).thenReturn(1L);
 
 		this.service.excluirRegistro("chave");
+
+		verify(commands).del("chave");
 	}
 
 	@Test
@@ -102,13 +112,16 @@ class RedisServiceTest {
 	@Test
 	@DisplayName("Deve aplicar configuracao Redis em runtime")
 	void deve_aplicar_configuracao_redis_em_runtime() {
-		this.service.aplicarConfiguracao(new RedisConfiguracao("redis.local", 6380, true, "user", "pass"));
+		this.service.aplicarConfiguracao(
+				new RedisConfiguracao("redis.local", 6380, true, "user", "pass"));
 
-		assertThat(this.configuracao.getHost()).isEqualTo("redis.local");
-		assertThat(this.configuracao.getPort()).isEqualTo(6380);
-		assertThat(this.configuracao.getTls()).isTrue();
-		assertThat(this.configuracao.getUsername()).isEqualTo("user");
-		assertThat(this.configuracao.getPassword()).isEqualTo("pass");
+		var atual = this.service.carregarConfiguracao();
+
+		assertThat(atual.getHost()).isEqualTo("redis.local");
+		assertThat(atual.getPort()).isEqualTo(6380);
+		assertThat(atual.getTls()).isTrue();
+		assertThat(atual.getUsername()).isEqualTo("user");
+		assertThat(atual.getPassword()).isEqualTo("pass");
 	}
 
 	@SuppressWarnings("unchecked")

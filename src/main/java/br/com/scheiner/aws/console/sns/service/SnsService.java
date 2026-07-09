@@ -11,12 +11,13 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import br.com.scheiner.aws.console.sns.gateway.SnsClientGateway;
 import br.com.scheiner.aws.console.sns.model.SnsSubscription;
 import br.com.scheiner.aws.console.sns.model.SnsTopic;
-import br.com.scheiner.aws.console.sns.gateway.SnsClientGateway;
 import software.amazon.awssdk.services.sns.model.ListTopicsRequest;
 import software.amazon.awssdk.services.sns.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.Topic;
 
 @Service
 public class SnsService {
@@ -38,7 +39,7 @@ public class SnsService {
 				.listTopicsPaginator(ListTopicsRequest.builder().build())
 				.topics()
 				.stream()
-				.map(topic -> topic.topicArn())
+				.map(Topic::topicArn)
 				.map(topicArn -> new SnsTopic(
 						this.extrairNomeTopico(topicArn),
 						topicArn,
