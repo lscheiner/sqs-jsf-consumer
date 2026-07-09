@@ -92,4 +92,16 @@ class SqsModelTest {
 		assertThat(detalhes.getMaxReceiveCount()).isEqualTo("5");
 		assertThat(detalhes.getFilaOriginalNome()).isEqualTo("original");
 	}
+	
+	@Test
+	@DisplayName("Deve considerar campos em branco como ausentes")
+	void deve_considerar_campos_em_branco_como_ausentes() {
+		var detalhes = new SqsQueueDetails();
+
+		detalhes.setDlqArn("   ");
+		assertThat(detalhes.isPossuiDlq()).isFalse();
+
+		detalhes.setFilaOriginalUrl(" ");
+		assertThat(detalhes.isDlqComFilaOriginal()).isFalse();
+	}
 }
