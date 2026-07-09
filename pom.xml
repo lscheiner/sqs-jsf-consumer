@@ -30,6 +30,9 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<sonar.coverage.exclusions>
+			**/*Application.java
+		</sonar.coverage.exclusions>
 	</properties>
 
 	<dependencyManagement>
