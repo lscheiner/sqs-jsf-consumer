@@ -44,4 +44,16 @@ class DashboardSummaryTest {
 		assertThat(summary.getLocalstackEndpoint()).isEqualTo("http://localhost:4566");
 		assertThat(summary.getRedisHost()).isEqualTo("localhost:6379");
 	}
+	
+	@Test
+	@DisplayName("Deve refletir o status de conexao para todos os estados dos servicos")
+	void deve_refletir_o_status_de_conexao_para_todos_os_estados_dos_servicos() {
+		var summary = new DashboardSummary();
+
+		summary.setLocalstackStatus(ServiceStatus.DISCONNECTED);
+		assertThat(summary.isLocalstackConnected()).isFalse();
+
+		summary.setRedisStatus(ServiceStatus.CONNECTED);
+		assertThat(summary.isRedisConnected()).isTrue();
+	}
 }

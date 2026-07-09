@@ -664,4 +664,26 @@ class SqsExplorerControllerTest {
 		this.controller.setIntervaloAtualizacao(10);
 		assertThat(this.controller.getIntervaloAtualizacao()).isEqualTo(10);
 	}
+	
+	@Test
+	@DisplayName("Deve enviar mensagem quando message attributes contiver um JSON valido")
+	void deve_enviar_mensagem_quando_message_attributes_conter_um_json_valido() {
+		var fila = novaFila("fila-a", "url-a");
+		ReflectionTestUtils.setField(this.controller, "filaSelecionada", fila);
+
+		this.controller.setBodyEnvio("{}");
+		this.controller.setMessageAttributesEnvio("{\"origem\":\"teste\"}");
+
+		when(this.sqsExplorerService.isJsonValido("{}")).thenReturn(true);
+		when(this.sqsExplorerService.isJsonValido("{\"origem\":\"teste\"}")).thenReturn(true);
+
+		when(this.sqsExplorerService.listarFilas()).thenReturn(List.of(fila));
+		when(this.sqsExplorerService.buscarDetalhes("url-a")).thenReturn(new SqsQueueDetails());
+		when(this.sqsExplorerService.buscarMensagens("url-a", 5)).thenReturn(List.of());
+
+		this.controller.enviarMensagem();
+
+		verify(this.sqsExplorerService)
+				.enviarMensagem("url-a", "{}", "{\"origem\":\"teste\"}");
+	}
 }

@@ -85,6 +85,58 @@ class DashboardServiceTest {
 
 		assertThat(data.getSummary().getLocalstackStatus()).isEqualTo(ServiceStatus.DISCONNECTED);
 	}
+	
+	@Test
+	@DisplayName("Deve considerar LocalStack conectado quando apenas o DynamoDB estiver conectado")
+	void deve_considerar_localstack_conectado_quando_apenas_dynamodb_estiver_conectado() {
+		var service = new DashboardService(List.of(
+				provider(ResourceType.SQS, ServiceStatus.UNAVAILABLE, 0, null),
+				provider(ResourceType.DYNAMODB, ServiceStatus.CONNECTED, 0, null),
+				provider(ResourceType.SNS, ServiceStatus.UNAVAILABLE, 0, null)),
+				new AwsConfiguration("http://local", "sa-east-1"));
+
+		assertThat(service.load().getSummary().getLocalstackStatus())
+				.isEqualTo(ServiceStatus.CONNECTED);
+	}
+
+	@Test
+	@DisplayName("Deve considerar LocalStack conectado quando apenas o SNS estiver conectado")
+	void deve_considerar_localstack_conectado_quando_apenas_sns_estiver_conectado() {
+		var service = new DashboardService(List.of(
+				provider(ResourceType.SQS, ServiceStatus.UNAVAILABLE, 0, null),
+				provider(ResourceType.DYNAMODB, ServiceStatus.UNAVAILABLE, 0, null),
+				provider(ResourceType.SNS, ServiceStatus.CONNECTED, 0, null)),
+				new AwsConfiguration("http://local", "sa-east-1"));
+
+		assertThat(service.load().getSummary().getLocalstackStatus())
+				.isEqualTo(ServiceStatus.CONNECTED);
+	}
+
+	@Test
+	@DisplayName("Deve considerar LocalStack desconectado quando apenas o DynamoDB estiver desconectado")
+	void deve_considerar_localstack_desconectado_quando_apenas_dynamodb_estiver_desconectado() {
+		var service = new DashboardService(List.of(
+				provider(ResourceType.SQS, ServiceStatus.UNAVAILABLE, 0, null),
+				provider(ResourceType.DYNAMODB, ServiceStatus.DISCONNECTED, 0, null),
+				provider(ResourceType.SNS, ServiceStatus.UNAVAILABLE, 0, null)),
+				new AwsConfiguration("http://local", "sa-east-1"));
+
+		assertThat(service.load().getSummary().getLocalstackStatus())
+				.isEqualTo(ServiceStatus.DISCONNECTED);
+	}
+
+	@Test
+	@DisplayName("Deve considerar LocalStack desconectado quando apenas o SNS estiver desconectado")
+	void deve_considerar_localstack_desconectado_quando_apenas_sns_estiver_desconectado() {
+		var service = new DashboardService(List.of(
+				provider(ResourceType.SQS, ServiceStatus.UNAVAILABLE, 0, null),
+				provider(ResourceType.DYNAMODB, ServiceStatus.UNAVAILABLE, 0, null),
+				provider(ResourceType.SNS, ServiceStatus.DISCONNECTED, 0, null)),
+				new AwsConfiguration("http://local", "sa-east-1"));
+
+		assertThat(service.load().getSummary().getLocalstackStatus())
+				.isEqualTo(ServiceStatus.DISCONNECTED);
+	}
 
 	private static ResourceInfoProvider provider(
 			ResourceType type,

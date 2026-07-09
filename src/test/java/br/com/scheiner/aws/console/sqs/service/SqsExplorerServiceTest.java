@@ -196,6 +196,93 @@ class SqsExplorerServiceTest {
 		assertThat(this.service.isJsonValido("{\"ok\":true}")).isTrue();
 		assertThat(this.service.isJsonValido("{invalido")).isFalse();
 	}
+	
+	@Test
+	@DisplayName("Deve identificar DLQ pelo nome da fila")
+	void deve_identificar_dlq_pelo_nome_da_fila() {
+
+		String url = BASE + "minha-dlq";
+
+		when(client.listQueues(any(ListQueuesRequest.class)))
+				.thenReturn(ListQueuesResponse.builder()
+						.queueUrls(url)
+						.build());
+
+		when(client.getQueueAttributes(any(GetQueueAttributesRequest.class)))
+				.thenReturn(GetQueueAttributesResponse.builder()
+						.attributes(Map.of(
+								QueueAttributeName.QUEUE_ARN,
+								"arn:aws:sqs:::minha-dlq",
+								QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES,
+								"0"))
+						.build());
+
+		assertThat(service.listarFilas().getFirst().isDlq()).isTrue();
+	}
+	
+	@Test
+	@DisplayName("Deve retornar vazio quando a fila nao possuir ARN")
+	void deve_retornar_vazio_quando_fila_nao_possuir_arn() {
+
+		when(client.getQueueAttributes(any(GetQueueAttributesRequest.class)))
+				.thenReturn(GetQueueAttributesResponse.builder()
+						.attributes(Map.of())
+						.build());
+
+		var detalhes = service.buscarDetalhes(FILA);
+
+		assertThat(detalhes.getFilaOriginalUrl()).isNull();
+		assertThat(detalhes.getFilaOriginalNome()).isNull();
+	}
+	
+	@Test
+	@DisplayName("Deve ignorar redrive policy invalida ao buscar detalhes da fila")
+	void deve_ignorar_redrive_policy_invalida_ao_buscar_detalhes_da_fila() {
+
+		when(client.listQueues())
+				.thenReturn(ListQueuesResponse.builder().queueUrls(FILA).build());
+
+		when(client.getQueueAttributes(any(GetQueueAttributesRequest.class)))
+				.thenReturn(GetQueueAttributesResponse.builder()
+						.attributes(Map.of(
+								QueueAttributeName.QUEUE_ARN, ARN_FILA,
+								QueueAttributeName.REDRIVE_POLICY, "{json-invalido",
+								QueueAttributeName.VISIBILITY_TIMEOUT, "30",
+								QueueAttributeName.MESSAGE_RETENTION_PERIOD, "86400",
+								QueueAttributeName.RECEIVE_MESSAGE_WAIT_TIME_SECONDS, "0"))
+						.build());
+
+		var detalhes = service.buscarDetalhes(FILA);
+
+		assertThat(detalhes.getDlqArn()).isNull();
+		assertThat(detalhes.getDlqNome()).isNull();
+		assertThat(detalhes.getMaxReceiveCount()).isNull();
+	}
+	
+	@Test
+	@DisplayName("Deve identificar fila FIFO pelo sufixo da URL quando o atributo FIFO for falso")
+	void deve_identificar_fila_fifo_pelo_sufixo_da_url_quando_o_atributo_fifo_for_falso() {
+
+		when(client.listQueues(any(ListQueuesRequest.class)))
+				.thenReturn(ListQueuesResponse.builder()
+						.queueUrls(FILA_FIFO)
+						.build());
+
+		when(client.getQueueAttributes(any(GetQueueAttributesRequest.class)))
+				.thenReturn(GetQueueAttributesResponse.builder()
+						.attributes(Map.of(
+								QueueAttributeName.QUEUE_ARN,
+								"arn:aws:sqs:sa-east-1:000000000000:pedido.fifo",
+								QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES,
+								"0",
+								QueueAttributeName.FIFO_QUEUE,
+								"false"))
+						.build());
+
+		var fila = service.listarFilas().getFirst();
+
+		assertThat(fila.getTipo()).isEqualTo("FIFO");
+	}
 
 	private void stubAtributosPadrao() {
 		when(this.client.getQueueAttributes(any(GetQueueAttributesRequest.class)))
