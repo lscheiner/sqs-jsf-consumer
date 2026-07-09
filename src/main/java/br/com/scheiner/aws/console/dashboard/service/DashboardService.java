@@ -79,7 +79,7 @@ public class DashboardService {
 		summary.setDynamoTableCount(dynamodb.getCountAsInt());
 		summary.setSnsTopicCount(sns.getCountAsInt());
 		summary.setRedisKeyCount(redis.getCountAsInt());
-		summary.setLocalstackStatus(this.localstackStatus(sqs, dynamodb));
+		summary.setLocalstackStatus(this.localstackStatus(sqs, dynamodb, sns));
 		summary.setRedisStatus(redis.getStatus());
 		summary.setLocalstackEndpoint(this.awsConfiguration.getEndpoint());
 		summary.setRedisHost(redis.getConfiguredAddress());
@@ -99,11 +99,15 @@ public class DashboardService {
 	}
 
 	private ServiceStatus localstackStatus(
-			ResourceInfo sqs, ResourceInfo dynamodb) {
-		if (sqs.getStatus() == ServiceStatus.CONNECTED || dynamodb.getStatus() == ServiceStatus.CONNECTED) {
+			ResourceInfo sqs, ResourceInfo dynamodb, ResourceInfo sns) {
+		if (sqs.getStatus() == ServiceStatus.CONNECTED
+				|| dynamodb.getStatus() == ServiceStatus.CONNECTED
+				|| sns.getStatus() == ServiceStatus.CONNECTED) {
 			return ServiceStatus.CONNECTED;
 		}
-		if (sqs.getStatus() == ServiceStatus.DISCONNECTED || dynamodb.getStatus() == ServiceStatus.DISCONNECTED) {
+		if (sqs.getStatus() == ServiceStatus.DISCONNECTED
+				|| dynamodb.getStatus() == ServiceStatus.DISCONNECTED
+				|| sns.getStatus() == ServiceStatus.DISCONNECTED) {
 			return ServiceStatus.DISCONNECTED;
 		}
 		return ServiceStatus.UNAVAILABLE;

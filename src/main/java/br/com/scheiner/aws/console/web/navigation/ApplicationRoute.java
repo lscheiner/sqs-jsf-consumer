@@ -9,6 +9,7 @@ public enum ApplicationRoute {
 
 	DASHBOARD("/dashboard.xhtml", null),
 	SQS("/sqs-explorer.xhtml", "fila"),
+	SNS("/sns.xhtml", "topico"),
 	DYNAMODB("/dynamodb.xhtml", "tabela"),
 	REDIS("/redis.xhtml", null);
 
@@ -41,9 +42,10 @@ public enum ApplicationRoute {
 	public static ApplicationRoute from(ResourceType resourceType) {
 		return switch (resourceType) {
 			case SQS -> SQS;
+			case SNS -> SNS;
 			case DYNAMODB -> DYNAMODB;
 			case REDIS -> REDIS;
-			case SNS, ROOT -> null;
+			case ROOT -> null;
 		};
 	}
 }

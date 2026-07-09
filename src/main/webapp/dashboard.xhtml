@@ -62,11 +62,13 @@
                         <span style="margin-left:.4rem; color:var(--text-color-secondary);">chaves</span>
                     </p:card>
                 </p:commandLink>
-                <p:card style="opacity:.68;">
-                    <f:facet name="title">SNS <p:tag value="Em breve" severity="secondary" /></f:facet>
-                    <span style="font-size:1.75rem; font-weight:700;">#{dashboardController.summary.snsTopicCount}</span>
-                    <span style="margin-left:.4rem; color:var(--text-color-secondary);">tópicos</span>
-                </p:card>
+				<p:commandLink action="#{dashboardController.abrir('SNS')}" ajax="false" styleClass="dashboard-card-link">
+                    <p:card>
+                        <f:facet name="title">SNS</f:facet>
+                        <span style="font-size:1.75rem; font-weight:700;">#{dashboardController.summary.snsTopicCount}</span>
+                        <span style="margin-left:.4rem; color:var(--text-color-secondary);">tópicos</span>
+                    </p:card>
+                </p:commandLink>
             </div>
         </section>
 

@@ -226,6 +226,11 @@
                     <h:outputText value="SQS" />
                 </h:link>
 
+                <h:link outcome="/sns" styleClass="menu-item #{view.viewId eq '/sns.xhtml' ? 'active' : ''}">
+                    <i class="pi pi-send"></i>
+                    <h:outputText value="SNS" />
+                </h:link>
+
                 <h:link outcome="/dynamodb" styleClass="menu-item #{view.viewId eq '/dynamodb.xhtml' ? 'active' : ''}">
                     <i class="pi pi-database"></i>
                     <span>

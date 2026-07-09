@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	template="template/template.xhtml">
+
+<ui:define name="title">SNS - LocalStack Console</ui:define>
+
+<ui:define name="content">
+
+    <div class="page-header">
+        <div class="page-title">
+            SNS Explorer
+        </div>
+
+        <div class="page-subtitle">
+            Helper para publicar mensagens em topicos SNS no LocalStack
+        </div>
+    </div>
+
+    <h:form id="formSnsExplorer">
+
+        <div style="display:grid; grid-template-columns: 320px minmax(0, 1fr); gap:1.25rem;">
+
+            <p:panel header="Topicos SNS">
+
+                <div class="ui-fluid" style="margin-bottom:1rem;">
+                    <p:inputText id="buscaTopico"
+                                 value="#{snsController.filtroTopico}"
+                                 placeholder="Buscar topico por nome ou ARN...">
+                        <p:ajax event="keyup" update="listaTopicos" />
+                    </p:inputText>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
+                    <h:outputText value="#{snsController.topicosFiltrados.size()} topico(s)" style="color:var(--text-color-secondary);" />
+
+                    <p:commandButton icon="pi pi-refresh"
+                                     title="Refresh"
+                                     rounded="true"
+                                     process="@this"
+                                     update="@form :growl"
+                                     action="#{snsController.atualizarTudo()}" />
+                </div>
+
+                <h:panelGroup id="listaTopicos" layout="block">
+                    <ui:repeat value="#{snsController.topicosFiltrados}" var="topico">
+                        <p:commandLink process="@this"
+                                       update="@form :growl"
+                                       action="#{snsController.selecionarTopico(topico)}"
+                                       style="display:block; text-decoration:none; color:inherit;">
+
+                            <div style="border:1px solid var(--surface-border);
+                                        border-radius:10px;
+                                        padding:.85rem;
+                                        margin-bottom:.65rem;
+                                        background:#fff;">
+
+                                <div style="display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start;">
+                                    <h:outputText value="#{topico.nome}" style="font-weight:700; font-family:monospace;" />
+                                    <p:tag value="#{topico.quantidadeAssinaturas} sub" severity="info" />
+                                </div>
+
+                                <div style="margin-top:.6rem; color:var(--text-color-secondary); font-size:.85rem; font-family:monospace; word-break:break-all;">
+                                    <h:outputText value="#{topico.arn}" />
+                                </div>
+
+                            </div>
+
+                        </p:commandLink>
+                    </ui:repeat>
+                </h:panelGroup>
+
+            </p:panel>
+
+            <p:panel header="#{snsController.topicoSelecionado != null ? snsController.topicoSelecionado.nome : 'Selecione um topico'}">
+
+                <h:panelGroup rendered="#{empty snsController.topicoSelecionado}">
+                    <p:staticMessage severity="info"
+                                     summary="Nenhum topico selecionado"
+                                     detail="Escolha um topico no painel esquerdo para visualizar assinaturas e publicar mensagens." />
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{not empty snsController.topicoSelecionado}">
+
+                    <div style="display:flex; justify-content:flex-end; align-items:center; gap:.75rem; margin-bottom:1rem;">
+                        <p:commandButton value="Refresh"
+                                         icon="pi pi-refresh"
+                                         process="@this"
+                                         update="@form :growl"
+                                         action="#{snsController.atualizarTudo()}"
+                                         outlined="true" />
+                    </div>
+
+                    <p:tabView id="tabSnsDetalhes">
+
+                        <p:tab title="Informacoes">
+
+                            <div style="display:grid; grid-template-columns: 220px minmax(0, 1fr); gap:.75rem 1rem;">
+                                <strong>Topic Name</strong>
+                                <h:outputText value="#{snsController.topicoSelecionado.nome}" />
+
+                                <strong>Topic ARN</strong>
+                                <h:outputText value="#{snsController.topicoSelecionado.arn}" style="font-family:monospace; word-break:break-all;" />
+
+                                <strong>Assinaturas</strong>
+                                <h:outputText value="#{snsController.assinaturas.size()}" />
+                            </div>
+
+                            <p:divider />
+
+                            <p:dataTable value="#{snsController.assinaturas}"
+                                         var="assinatura"
+                                         paginator="true"
+                                         rows="5"
+                                         emptyMessage="Nenhuma assinatura encontrada para este topico."
+                                         responsiveLayout="scroll">
+
+                                <p:column headerText="Protocol" style="width:130px;">
+                                    <p:tag value="#{assinatura.protocolo}" severity="secondary" />
+                                </p:column>
+
+                                <p:column headerText="Endpoint">
+                                    <h:outputText value="#{assinatura.endpoint}" style="font-family:monospace; word-break:break-all;" />
+                                </p:column>
+
+                                <p:column headerText="Subscription ARN">
+                                    <h:outputText value="#{assinatura.arn}" style="font-family:monospace; word-break:break-all;" />
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </p:tab>
+
+                        <p:tab title="Publicar mensagem">
+
+                            <p:panel header="Enviar mensagem SNS">
+                                <div class="ui-fluid">
+
+                                    <div style="margin-bottom:1rem;">
+                                        <p:outputLabel for="subjectEnvio" value="Subject opcional" style="font-weight:600;" />
+                                        <p:inputText id="subjectEnvio"
+                                                     value="#{snsController.subjectEnvio}"
+                                                     maxlength="100"
+                                                     placeholder="Assunto da mensagem"
+                                                     style="margin-top:.5rem;" />
+                                    </div>
+
+                                    <div style="margin-bottom:1rem;">
+                                        <p:outputLabel for="bodyEnvio" value="Message JSON" style="font-weight:600;" />
+                                        <p:inputTextarea id="bodyEnvio"
+                                                         value="#{snsController.bodyEnvio}"
+                                                         rows="12"
+                                                         autoResize="false"
+                                                         placeholder="{ }"
+                                                         style="margin-top:.5rem; font-family:monospace;" />
+                                    </div>
+
+                                    <div style="margin-bottom:1rem;">
+                                        <p:outputLabel for="messageAttributesEnvio" value="Message Attributes JSON opcional" style="font-weight:600;" />
+                                        <p:inputTextarea id="messageAttributesEnvio"
+                                                         value="#{snsController.messageAttributesEnvio}"
+                                                         rows="5"
+                                                         autoResize="false"
+                                                         placeholder="{ &quot;content-type&quot;: { &quot;dataType&quot;: &quot;String&quot;, &quot;stringValue&quot;: &quot;application/json&quot; } }"
+                                                         style="margin-top:.5rem; font-family:monospace;" />
+                                    </div>
+
+                                    <div style="display:flex; justify-content:flex-end;">
+                                        <p:commandButton value="Publicar"
+                                                         icon="pi pi-send"
+                                                         process="@form"
+                                                         update="@form :growl"
+                                                         action="#{snsController.publicarMensagem}"
+                                                         style="width:auto; min-width:160px; font-weight:600;" />
+                                    </div>
+
+                                </div>
+                            </p:panel>
+
+                        </p:tab>
+
+                    </p:tabView>
+
+                </h:panelGroup>
+
+            </p:panel>
+
+        </div>
+
+    </h:form>
+
+</ui:define>
+
+</ui:composition>
