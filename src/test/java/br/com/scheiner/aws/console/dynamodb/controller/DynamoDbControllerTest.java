@@ -9,6 +9,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -22,7 +23,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.primefaces.PrimeFaces;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import br.com.scheiner.aws.console.dynamodb.model.DynamoDbTableMetadata;
 import br.com.scheiner.aws.console.dynamodb.service.DynamoDbService;
 import br.com.scheiner.aws.console.dynamodb.util.DynamoDbJsonMapper;
 import br.com.scheiner.aws.console.web.navigation.ApplicationRoute;
@@ -619,7 +622,7 @@ class DynamoDbControllerTest {
 
 			verify(dynamoDbService).salvarItem("clientes", item);
 
-			verify(dynamoDbService, org.mockito.Mockito.never()).excluirItem(any(), any());
+			verify(dynamoDbService, never()).excluirItem(any(), any());
 
 			verify(ajax).addCallbackParam("salvo", true);
 		}
@@ -775,5 +778,177 @@ class DynamoDbControllerTest {
 			verify(facesContext, atLeastOnce())
 					.addMessage(isNull(), any(FacesMessage.class));
 		}
+	}
+	
+	@Test
+	@DisplayName("Não deve selecionar tabela inexistente")
+	void nao_deve_selecionar_tabela_inexistente() {
+
+		controller.setTabelas(List.of("clientes"));
+
+		ReflectionTestUtils.invokeMethod(
+				controller,
+				"selecionarTabelaPorNome",
+				"pedidos");
+
+		assertThat(controller.getTabelaSelecionada()).isNull();
+	}
+	
+	@Test
+	@DisplayName("Deve montar colunas quando item não possuir sort key")
+	void deve_montar_colunas_quando_item_nao_possuir_sort_key() {
+
+		when(dynamoDbService.descreverTabela("clientes"))
+				.thenReturn(criarDescricaoTabela());
+
+		Map<String, AttributeValue> item = new LinkedHashMap<>();
+		item.put("id", AttributeValue.builder().s("1").build());
+
+		when(dynamoDbService.buscarItens("clientes"))
+				.thenReturn(List.of(item));
+
+		var facesContext = mock(FacesContext.class);
+
+		try (MockedStatic<FacesContext> mocked = mockStatic(FacesContext.class)) {
+
+			mocked.when(FacesContext::getCurrentInstance)
+					.thenReturn(facesContext);
+
+			controller.setTabelaSelecionada("clientes");
+
+			controller.selecionarTabela();
+
+			assertThat(controller.getColunas())
+					.containsExactly("id");
+		}
+	}
+	
+	@Test
+	@DisplayName("Deve criar item quando existir somente sort key")
+	void deve_criar_item_quando_existir_somente_sort_key() {
+
+		var metadata = mock(DynamoDbTableMetadata.class);
+
+		when(metadata.getPartitionKey()).thenReturn(null);
+		when(metadata.getSortKey()).thenReturn("sk");
+		when(metadata.getTipoAtributo("sk")).thenReturn("N");
+
+		ReflectionTestUtils.setField(controller, "metadataTabela", metadata);
+
+		controller.novoItem();
+
+		assertThat(controller.getJsonItemFormulario())
+				.contains("\"sk\"");
+	}
+	
+	@Test
+	@DisplayName("Deve extrair somente sort key")
+	void deve_extrair_somente_sort_key() {
+
+		var metadata = mock(DynamoDbTableMetadata.class);
+
+		when(metadata.getPartitionKey()).thenReturn(null);
+		when(metadata.getSortKey()).thenReturn("sk");
+
+		ReflectionTestUtils.setField(controller, "metadataTabela", metadata);
+		ReflectionTestUtils.setField(controller, "tabelaSelecionada", "clientes");
+
+		Map<String, AttributeValue> item = new LinkedHashMap<>();
+		item.put("sk", AttributeValue.builder().n("10").build());
+
+		when(dynamoDbService.buscarItem(any(), any()))
+				.thenReturn(item);
+
+		controller.editarItem(item);
+
+		verify(dynamoDbService).buscarItem(
+				eq("clientes"),
+				argThat(chave ->
+						chave.size() == 1 &&
+						chave.containsKey("sk")));
+	}
+	
+	@Test
+	@DisplayName("Deve extrair somente partition key")
+	void deve_extrair_somente_partition_key() {
+
+		var metadata = mock(DynamoDbTableMetadata.class);
+
+		when(metadata.getPartitionKey()).thenReturn("id");
+		when(metadata.getSortKey()).thenReturn(null);
+
+		ReflectionTestUtils.setField(controller, "metadataTabela", metadata);
+		ReflectionTestUtils.setField(controller, "tabelaSelecionada", "clientes");
+
+		Map<String, AttributeValue> item = new LinkedHashMap<>();
+		item.put("id", AttributeValue.builder().s("1").build());
+
+		when(dynamoDbService.buscarItem(any(), any()))
+				.thenReturn(item);
+
+		controller.editarItem(item);
+
+		verify(dynamoDbService).buscarItem(
+				eq("clientes"),
+				argThat(chave ->
+						chave.size() == 1 &&
+						chave.containsKey("id")));
+	}
+	
+	@Test
+	@DisplayName("Deve montar colunas quando item não possuir a partition key")
+	void deve_montar_colunas_quando_item_nao_possuir_partition_key() {
+
+		when(dynamoDbService.descreverTabela("clientes"))
+				.thenReturn(criarDescricaoTabela());
+
+		Map<String, AttributeValue> item = new LinkedHashMap<>();
+		item.put("nome", AttributeValue.builder().s("Leandro").build());
+
+		when(dynamoDbService.buscarItens("clientes"))
+				.thenReturn(List.of(item));
+
+		var facesContext = mock(FacesContext.class);
+
+		try (var mockedFaces = mockStatic(FacesContext.class)) {
+
+			mockedFaces.when(FacesContext::getCurrentInstance)
+					.thenReturn(facesContext);
+
+			controller.setTabelaSelecionada("clientes");
+
+			controller.selecionarTabela();
+
+			assertThat(controller.getColunas())
+					.containsExactly("nome");
+		}
+	}
+	
+	@Test
+	@DisplayName("Deve montar colunas quando a tabela não possuir partition key nem sort key")
+	void deve_montar_colunas_quando_tabela_nao_possuir_partition_key_nem_sort_key() {
+
+		var descricaoSemChaves = software.amazon.awssdk.services.dynamodb.model.TableDescription.builder()
+	            .tableName("clientes")
+	            .keySchema(java.util.List.of())
+	            .build();
+
+	    when(dynamoDbService.descreverTabela("clientes")).thenReturn(descricaoSemChaves);
+
+	    Map<String, AttributeValue> item = new java.util.LinkedHashMap<>();
+	    item.put("nome", AttributeValue.builder().s("Leandro").build());
+	    
+	    when(dynamoDbService.buscarItens("clientes")).thenReturn(List.of(item));
+
+	    var facesContext = mock(FacesContext.class);
+
+	    try (var mockedFaces = mockStatic(FacesContext.class)) {
+	        mockedFaces.when(FacesContext::getCurrentInstance).thenReturn(facesContext);
+
+	        controller.setTabelaSelecionada("clientes");
+	        controller.selecionarTabela();
+
+	        assertThat(controller.getColunas()).containsExactly("nome");
+	    }
 	}
 }

@@ -404,10 +404,7 @@ public class DynamoDbController implements Controller {
 	}
 	
 	public String formatarValor(AttributeValue valor) {
-
-		var valorComparable = this.obterValorComparable(valor);
-
-		return valorComparable != null ? valorComparable.toString() : "";
+		return this.obterValorComparable(valor).toString();
 	}
 
 	public boolean isValorComplexo(AttributeValue valor) {
