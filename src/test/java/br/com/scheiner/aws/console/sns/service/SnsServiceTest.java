@@ -1,6 +1,5 @@
 package br.com.scheiner.aws.console.sns.service;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import br.com.scheiner.aws.console.sns.gateway.SnsClientGateway;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.ListSubscriptionsByTopicRequest;
 import software.amazon.awssdk.services.sns.model.ListSubscriptionsByTopicResponse;
@@ -35,19 +35,18 @@ class SnsServiceTest {
 	@Test
 	@DisplayName("Deve listar topicos ordenados com quantidade de assinaturas")
 	void deve_listar_topicos_ordenados_com_quantidade_de_assinaturas() {
+		
 		when(this.client.listTopicsPaginator(any(ListTopicsRequest.class)))
 				.thenReturn(new ListTopicsIterable(this.client, ListTopicsRequest.builder().build()));
-		when(this.client.listTopics(any(ListTopicsRequest.class))).thenReturn(ListTopicsResponse.builder()
-				.topics(
-						Topic.builder().topicArn("arn:aws:sns:sa-east-1:000000000000:z-topico").build(),
-						Topic.builder().topicArn("arn:aws:sns:sa-east-1:000000000000:a-topico").build())
-				.build());
-		when(this.client.listSubscriptionsByTopicPaginator(anyConsumer()))
-				.thenReturn(new ListSubscriptionsByTopicIterable(this.client, ListSubscriptionsByTopicRequest.builder().build()));
-		when(this.client.listSubscriptionsByTopic(any(ListSubscriptionsByTopicRequest.class)))
-				.thenReturn(ListSubscriptionsByTopicResponse.builder()
-						.subscriptions(subscription("sqs", "fila"))
+		when(this.client.listTopics(any(ListTopicsRequest.class)))
+				.thenReturn(ListTopicsResponse.builder()
+						.topics(Topic.builder().topicArn("arn:aws:sns:sa-east-1:000000000000:z-topico").build(),
+								Topic.builder().topicArn("arn:aws:sns:sa-east-1:000000000000:a-topico").build())
 						.build());
+		when(this.client.listSubscriptionsByTopicPaginator(anyConsumer())).thenReturn(
+				new ListSubscriptionsByTopicIterable(this.client, ListSubscriptionsByTopicRequest.builder().build()));
+		when(this.client.listSubscriptionsByTopic(any(ListSubscriptionsByTopicRequest.class))).thenReturn(
+				ListSubscriptionsByTopicResponse.builder().subscriptions(subscription("sqs", "fila")).build());
 
 		var topicos = this.service.listarTopicos();
 
@@ -58,12 +57,10 @@ class SnsServiceTest {
 	@Test
 	@DisplayName("Deve listar assinaturas de um topico")
 	void deve_listar_assinaturas_de_um_topico() {
-		when(this.client.listSubscriptionsByTopicPaginator(anyConsumer()))
-				.thenReturn(new ListSubscriptionsByTopicIterable(this.client, ListSubscriptionsByTopicRequest.builder().build()));
-		when(this.client.listSubscriptionsByTopic(any(ListSubscriptionsByTopicRequest.class)))
-				.thenReturn(ListSubscriptionsByTopicResponse.builder()
-						.subscriptions(subscription("sqs", "arn:fila"))
-						.build());
+		when(this.client.listSubscriptionsByTopicPaginator(anyConsumer())).thenReturn(
+				new ListSubscriptionsByTopicIterable(this.client, ListSubscriptionsByTopicRequest.builder().build()));
+		when(this.client.listSubscriptionsByTopic(any(ListSubscriptionsByTopicRequest.class))).thenReturn(
+				ListSubscriptionsByTopicResponse.builder().subscriptions(subscription("sqs", "arn:fila")).build());
 
 		var assinaturas = this.service.listarAssinaturas("arn:topico");
 
@@ -97,10 +94,7 @@ class SnsServiceTest {
 		var captor = ArgumentCaptor.forClass(PublishRequest.class);
 		when(this.client.publish(captor.capture())).thenReturn(PublishResponse.builder().messageId("1").build());
 
-		this.service.publicarMensagem(
-				"arn:topico",
-				"assunto",
-				"{\"ok\":true}",
+		this.service.publicarMensagem("arn:topico", "assunto", "{\"ok\":true}",
 				"{\"origem\":{\"dataType\":\"String\",\"stringValue\":\"teste\"}}");
 
 		var request = captor.getValue();
@@ -112,8 +106,7 @@ class SnsServiceTest {
 	@Test
 	@DisplayName("Deve rejeitar atributos de mensagem com JSON invalido")
 	void deve_rejeitar_atributos_de_mensagem_com_json_invalido() {
-		var excecao = assertThrows(
-				IllegalArgumentException.class,
+		var excecao = assertThrows(IllegalArgumentException.class,
 				() -> this.service.publicarMensagem("arn", null, "{}", "{invalido"));
 
 		assertThat(excecao.getMessage()).contains("Message Attributes");
@@ -129,17 +122,40 @@ class SnsServiceTest {
 	@Test
 	@DisplayName("Deve extrair nome do topico a partir do ARN")
 	void deve_extrair_nome_do_topico_a_partir_do_arn() {
-		assertThat(this.service.extrairNomeTopico("arn:aws:sns:sa-east-1:000000000000:pedido"))
-				.isEqualTo("pedido");
+		assertThat(this.service.extrairNomeTopico("arn:aws:sns:sa-east-1:000000000000:pedido")).isEqualTo("pedido");
 		assertThat(this.service.extrairNomeTopico(null)).isEmpty();
 		assertThat(this.service.extrairNomeTopico("")).isEmpty();
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
+	@DisplayName("Deve passar o ARN correto do topico para o paginador de assinaturas")
+	void deve_passar_o_arn_correto_do_topico_para_o_paginador_de_assinaturas() {
+
+		var paginadorMock = mock(ListSubscriptionsByTopicIterable.class);
+
+		var sdkIterableMock = mock(SdkIterable.class);
+
+		when(paginadorMock.subscriptions()).thenReturn(sdkIterableMock);
+		when(sdkIterableMock.stream()).thenReturn(java.util.stream.Stream.empty());
+
+		ArgumentCaptor<Consumer<ListSubscriptionsByTopicRequest.Builder>> consumerCaptor = ArgumentCaptor
+				.forClass(Consumer.class);
+
+		when(this.client.listSubscriptionsByTopicPaginator(consumerCaptor.capture())).thenReturn(paginadorMock);
+
+		this.service.listarAssinaturas("arn:aws:sns:sa-east-1:000000000000:meu-topico");
+
+		var consumerExecutado = consumerCaptor.getValue();
+		var builderReal = ListSubscriptionsByTopicRequest.builder();
+		consumerExecutado.accept(builderReal);
+
+		var requestConstruida = builderReal.build();
+		assertThat(requestConstruida.topicArn()).isEqualTo("arn:aws:sns:sa-east-1:000000000000:meu-topico");
+	}
+
 	private static Subscription subscription(String protocolo, String endpoint) {
-		return Subscription.builder()
-				.subscriptionArn("arn:subscription")
-				.protocol(protocolo)
-				.endpoint(endpoint)
+		return Subscription.builder().subscriptionArn("arn:subscription").protocol(protocolo).endpoint(endpoint)
 				.build();
 	}
 

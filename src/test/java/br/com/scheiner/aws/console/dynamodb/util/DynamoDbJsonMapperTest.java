@@ -3,6 +3,8 @@ package br.com.scheiner.aws.console.dynamodb.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -95,4 +97,36 @@ class DynamoDbJsonMapperTest {
 
 		assertThat(DynamoDbJsonMapper.toJson(valor)).isEqualTo("{\"L\":[{\"N\":\"1\"}]}");
 	}
+	
+	@Test
+	@DisplayName("Deve lançar IllegalArgumentException quando ocorrer erro ao converter valor para JSON")
+	void deve_lancar_illegal_argument_exception_quando_ocorrer_erro_ao_converter_valor_para_json() {
+		
+		var valor = mock(AttributeValue.class);
+
+		when(valor.s()).thenThrow(new RuntimeException("erro"));
+
+		var excecao = assertThrows(IllegalArgumentException.class, () -> DynamoDbJsonMapper.toJson(valor));
+
+		assertThat(excecao).hasMessage("Erro ao converter valor para JSON.").hasCauseInstanceOf(RuntimeException.class);
+	}
+	
+	@Test
+	@DisplayName("Deve lançar IllegalArgumentException quando ocorrer erro ao converter item para JSON")
+	void deve_lancar_illegal_argument_exception_quando_ocorrer_erro_ao_converter_item_para_json() {
+		
+		var valor = mock(AttributeValue.class);
+		when(valor.s()).thenThrow(new RuntimeException("erro"));
+
+		var item = Map.of("campo", valor);
+
+		var excecao = assertThrows(
+				IllegalArgumentException.class,
+				() -> DynamoDbJsonMapper.toJson(item));
+
+		assertThat(excecao)
+				.hasMessage("Erro ao converter item para JSON.")
+				.hasCauseInstanceOf(RuntimeException.class);
+	}
+	
 }

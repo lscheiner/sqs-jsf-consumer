@@ -20,10 +20,9 @@ public final class DynamoDbJsonMapper {
 	}
 
 	public static String toJson(Map<String, AttributeValue> item) {
-		Map<String, Object> itemJson = new LinkedHashMap<>();
-		item.forEach((chave, valor) -> itemJson.put(chave, toJsonValue(valor)));
-
 		try {
+			Map<String, Object> itemJson = new LinkedHashMap<>();
+			item.forEach((chave, valor) -> itemJson.put(chave, toJsonValue(valor)));
 			return OBJECT_MAPPER.writeValueAsString(itemJson);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Erro ao converter item para JSON.", e);

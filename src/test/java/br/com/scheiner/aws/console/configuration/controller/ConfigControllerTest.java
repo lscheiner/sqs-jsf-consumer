@@ -266,4 +266,15 @@ class ConfigControllerTest {
 			verify(facesContext).addMessage(isNull(), any(FacesMessage.class));
 		}
 	}
+	
+	@Test
+	@DisplayName("Deve permitir alterar o estado de conexão manualmente")
+	void deve_permitir_alterar_o_estado_de_conexao_manualmente() {
+
+		controller.setConnected(true);
+		assertThat(controller.isConnected()).isTrue();
+
+		controller.setConnected(false);
+		assertThat(controller.isConnected()).isFalse();
+	}
 }
