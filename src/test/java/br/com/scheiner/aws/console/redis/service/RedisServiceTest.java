@@ -123,6 +123,20 @@ class RedisServiceTest {
 		assertThat(atual.getUsername()).isEqualTo("user");
 		assertThat(atual.getPassword()).isEqualTo("pass");
 	}
+	
+	@Test
+	@DisplayName("Deve salvar registro sem expiracao quando TTL for nulo")
+	void deve_salvar_registro_sem_expiracao_quando_ttl_for_nulo() {
+		var commands = commands();
+
+		when(this.provider.getCommands()).thenReturn(commands);
+		when(commands.set("chave", "valor")).thenReturn("OK");
+
+		this.service.salvarRegistro("chave", "valor", null);
+
+		verify(commands).set("chave", "valor");
+		verify(commands, never()).setex("chave", 60L, "valor");
+	}
 
 	@SuppressWarnings("unchecked")
 	private static RedisCommands<String, String> commands() {
