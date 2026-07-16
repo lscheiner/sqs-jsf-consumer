@@ -58,6 +58,10 @@
                             <h:outputText value="#{registro.chave}" style="font-family:monospace;" />
                         </p:column>
 
+                        <p:column headerText="Tipo" style="width:110px; text-align:center;" sortBy="#{registro.tipo}" filterBy="#{registro.tipo}" filterMatchMode="exact">
+                            <p:tag value="#{registro.tipo}" severity="#{registro.editavel ? 'info' : 'secondary'}" />
+                        </p:column>
+
                         <p:column headerText="Valor" sortBy="#{registro.valor}" filterBy="#{registro.valor}" filterMatchMode="contains">
                             <h:outputText id="valorPreview"
                                           value="#{redisController.previewValor(registro.valor)}"
@@ -80,7 +84,18 @@
                                              update=":dialogRedisRegistroForm"
                                              oncomplete="PF('dialogRedisRegistroWidget').show()"
                                              action="#{redisController.editarRegistro(registro)}"
-                                             style="margin-right:.5rem;" />
+                                             style="margin-right:.5rem;"
+                                             rendered="#{registro.editavel}" />
+
+                            <p:commandButton icon="pi pi-eye"
+                                             title="Visualizar valor completo"
+                                             rounded="true"
+                                             process="@this"
+                                             update=":dialogRedisVisualizacaoForm"
+                                             oncomplete="PF('dialogRedisVisualizacaoWidget').show()"
+                                             action="#{redisController.visualizarRegistro(registro)}"
+                                             style="margin-right:.5rem;"
+                                             rendered="#{not registro.editavel}" />
 
                             <p:commandButton icon="pi pi-trash"
                                              title="Excluir registro"
@@ -184,6 +199,49 @@
 </ui:define>
 
 <ui:define name="dialogs">
+
+    <h:form id="dialogRedisVisualizacaoForm">
+
+        <p:dialog id="dialogRedisVisualizacao"
+                  widgetVar="dialogRedisVisualizacaoWidget"
+                  header="Visualizar registro Redis"
+                  modal="true"
+                  responsive="true"
+                  closable="true"
+                  width="720">
+
+            <ui:fragment rendered="#{not empty redisController.registroVisualizacao}">
+
+            <div class="ui-fluid">
+
+                <div style="display:grid; grid-template-columns: 1fr 140px; gap:1rem; margin-bottom:1rem;">
+                    <div>
+                        <p:outputLabel value="Chave" style="font-weight:600;" />
+                        <h:outputText value="#{redisController.registroVisualizacao.chave}" style="display:block; margin-top:.5rem; font-family:monospace; word-break:break-all;" />
+                    </div>
+                    <div>
+                        <p:outputLabel value="Tipo" style="font-weight:600;" />
+                        <p:tag value="#{redisController.registroVisualizacao.tipo}" severity="secondary" style="display:block; margin-top:.5rem; width:max-content;" />
+                    </div>
+                </div>
+
+                <div>
+                    <p:outputLabel for="valorVisualizacao" value="Valor" style="font-weight:600;" />
+                    <p:inputTextarea id="valorVisualizacao"
+                                     value="#{redisController.registroVisualizacao.valor}"
+                                     rows="18"
+                                     autoResize="false"
+                                     readonly="true"
+                                     style="margin-top:.5rem; width:100%; font-family:monospace;" />
+                </div>
+
+            </div>
+
+            </ui:fragment>
+
+        </p:dialog>
+
+    </h:form>
 
     <h:form id="dialogRedisRegistroForm">
 

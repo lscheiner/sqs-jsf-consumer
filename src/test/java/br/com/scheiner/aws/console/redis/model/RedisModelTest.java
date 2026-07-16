@@ -16,10 +16,13 @@ class RedisModelTest {
 
 		registro.setChave("chave");
 		registro.setValor("valor");
+		registro.setTipo("hash");
 		registro.setTtl(10L);
 
 		assertThat(registro.getChave()).isEqualTo("chave");
 		assertThat(registro.getValor()).isEqualTo("valor");
+		assertThat(registro.getTipo()).isEqualTo("hash");
+		assertThat(registro.isEditavel()).isFalse();
 		assertThat(registro.getTtl()).isEqualTo(10L);
 	}
 
@@ -31,6 +34,8 @@ class RedisModelTest {
 		assertThat(registro.getChave()).isEqualTo("chave");
 		assertThat(registro.getValor()).isEqualTo("valor");
 		assertThat(registro.getTtl()).isEqualTo(-1L);
+		assertThat(registro.getTipo()).isEqualTo("string");
+		assertThat(registro.isEditavel()).isTrue();
 	}
 
 	@Test

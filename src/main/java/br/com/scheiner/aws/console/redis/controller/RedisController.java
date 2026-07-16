@@ -38,6 +38,8 @@ public class RedisController implements Controller {
 
 	private boolean novoRegistro;
 
+	private RedisRegistro registroVisualizacao;
+
 	private String host;
 
 	private Integer port;
@@ -90,6 +92,10 @@ public class RedisController implements Controller {
 		this.ttlFormulario = this.ttlEditavel(registro.getTtl());
 		this.chaveOriginal = registro.getChave();
 		this.novoRegistro = false;
+	}
+
+	public void visualizarRegistro(RedisRegistro registro) {
+		this.registroVisualizacao = registro;
 	}
 
 	public void salvarRegistro() {
@@ -222,6 +228,10 @@ public class RedisController implements Controller {
 
 	public boolean isNovoRegistro() {
 		return this.novoRegistro;
+	}
+
+	public RedisRegistro getRegistroVisualizacao() {
+		return this.registroVisualizacao;
 	}
 
 	public String getHost() {

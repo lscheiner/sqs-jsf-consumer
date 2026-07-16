@@ -2,8 +2,10 @@ package br.com.scheiner.aws.console.redis.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.scheiner.aws.console.redis.config.RedisClientProvider;
 import br.com.scheiner.aws.console.redis.config.RedisConnectionConfiguration;
@@ -14,14 +16,16 @@ import br.com.scheiner.aws.console.redis.model.RedisRegistro;
 public class RedisService {
 
 	private static final String TODAS_CHAVES = "*";
-
 	private final RedisClientProvider redisClientProvider;
 
 	private final RedisConnectionConfiguration redisConnectionConfiguration;
 
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
 	public RedisService(
 			RedisClientProvider redisClientProvider,
-			RedisConnectionConfiguration redisConnectionConfiguration) {
+			RedisConnectionConfiguration redisConnectionConfiguration
+			) {
 		this.redisClientProvider = redisClientProvider;
 		this.redisConnectionConfiguration = redisConnectionConfiguration;
 	}
@@ -33,8 +37,33 @@ public class RedisService {
 		chaves.sort(String::compareTo);
 
 		return chaves.stream()
-				.map(chave -> new RedisRegistro(chave, commands.get(chave), commands.ttl(chave)))
+				.map(chave -> this.criarRegistro(commands, chave))
 				.toList();
+	}
+
+	private RedisRegistro criarRegistro(io.lettuce.core.api.sync.RedisCommands<String, String> commands, String chave) {
+		var tipo = commands.type(chave);
+		return new RedisRegistro(chave, this.lerValor(commands, chave, tipo), tipo, commands.ttl(chave));
+	}
+
+	private String lerValor(io.lettuce.core.api.sync.RedisCommands<String, String> commands, String chave, String tipo) {
+		return switch (tipo) {
+			case "string" -> commands.get(chave);
+			case "hash" -> this.paraJson(commands.hgetall(chave));
+			case "list" -> this.paraJson(commands.lrange(chave, 0, -1));
+			case "set" -> this.paraJson(commands.smembers(chave));
+			case "zset" -> this.paraJson(commands.zrangeWithScores(chave, 0, -1));
+			case "stream" -> "[%d entradas]".formatted(commands.xlen(chave));
+			default -> "[%s]".formatted(tipo);
+		};
+	}
+
+	private String paraJson(Object valor) {
+		try {
+			return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(valor);
+		} catch (JsonProcessingException exception) {
+			throw new IllegalStateException("Nao foi possivel formatar o valor Redis.", exception);
+		}
 	}
 
 	public long contarChaves() {

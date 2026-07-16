@@ -1,12 +1,14 @@
 package br.com.scheiner.aws.console.redis.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import br.com.scheiner.aws.console.redis.config.RedisClientProvider;
 import br.com.scheiner.aws.console.redis.config.RedisConnectionConfiguration;
 import br.com.scheiner.aws.console.redis.model.RedisConfiguracao;
+import io.lettuce.core.ScoredValue;
 import io.lettuce.core.api.sync.RedisCommands;
 
 class RedisServiceTest {
@@ -29,6 +32,8 @@ class RedisServiceTest {
 		var commands = commands();
 		when(this.provider.getCommands()).thenReturn(commands);
 		when(commands.keys("*")).thenReturn(List.of("b", "a"));
+		when(commands.type("a")).thenReturn("string");
+		when(commands.type("b")).thenReturn("string");
 		when(commands.get("a")).thenReturn("valor-a");
 		when(commands.get("b")).thenReturn("valor-b");
 		when(commands.ttl("a")).thenReturn(10L);
@@ -38,7 +43,76 @@ class RedisServiceTest {
 
 		assertThat(registros).extracting("chave").containsExactly("a", "b");
 		assertThat(registros).extracting("valor").containsExactly("valor-a", "valor-b");
+		assertThat(registros).extracting("tipo").containsExactly("string", "string");
 		assertThat(registros).extracting("ttl").containsExactly(10L, -1L);
+	}
+
+	@Test
+	@DisplayName("Deve listar todos os tipos Redis sem executar GET para chaves nao-string")
+	void deve_listar_todos_os_tipos_redis_sem_executar_get_para_chaves_nao_string() {
+		var commands = commands();
+		when(this.provider.getCommands()).thenReturn(commands);
+		when(commands.keys("*")).thenReturn(List.of("usuario:1", "fila", "tags", "ranking", "eventos"));
+		when(commands.type("usuario:1")).thenReturn("hash");
+		when(commands.type("fila")).thenReturn("list");
+		when(commands.type("tags")).thenReturn("set");
+		when(commands.type("ranking")).thenReturn("zset");
+		when(commands.type("eventos")).thenReturn("stream");
+		when(commands.hgetall("usuario:1")).thenReturn(java.util.Map.of("nome", "Leandro"));
+		when(commands.lrange("fila", 0, -1)).thenReturn(List.of("primeiro", "segundo"));
+		when(commands.smembers("tags")).thenReturn(java.util.Set.of("localstack"));
+		when(commands.zrangeWithScores("ranking", 0, -1)).thenReturn(List.of(ScoredValue.just(10.0, "Leandro")));
+		when(commands.xlen("eventos")).thenReturn(3L);
+		when(commands.ttl("usuario:1")).thenReturn(-1L);
+		when(commands.ttl("fila")).thenReturn(60L);
+		when(commands.ttl("tags")).thenReturn(-1L);
+		when(commands.ttl("ranking")).thenReturn(-1L);
+		when(commands.ttl("eventos")).thenReturn(-1L);
+
+		var registros = this.service.listarRegistros();
+
+		assertThat(registros).extracting("tipo").containsExactly("stream", "list", "zset", "set", "hash");
+		assertThat(registros).allMatch(registro -> !registro.isEditavel());
+		assertThat(registros).filteredOn(registro -> registro.getChave().equals("eventos"))
+				.extracting("valor").containsExactly("[3 entradas]");
+		verify(commands, never()).get("usuario:1");
+		verify(commands, never()).get("fila");
+	}
+
+	@Test
+	@DisplayName("Deve exibir tipos Redis desconhecidos sem falhar")
+	void deve_exibir_tipos_redis_desconhecidos_sem_falhar() {
+		var commands = commands();
+		when(this.provider.getCommands()).thenReturn(commands);
+		when(commands.keys("*")).thenReturn(List.of("indice"));
+		when(commands.type("indice")).thenReturn("ReJSON-RL");
+		when(commands.ttl("indice")).thenReturn(-1L);
+
+		var registros = this.service.listarRegistros();
+
+		assertThat(registros).singleElement()
+				.satisfies(registro -> {
+					assertThat(registro.getTipo()).isEqualTo("ReJSON-RL");
+					assertThat(registro.getValor()).isEqualTo("[ReJSON-RL]");
+				});
+		verify(commands, never()).get("indice");
+	}
+
+	@Test
+	@DisplayName("Deve informar falha ao formatar valor Redis em JSON")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	void deve_informar_falha_ao_formatar_valor_redis_em_json() {
+		var commands = commands();
+		Map valorCircular = new java.util.HashMap<>();
+		valorCircular.put("self", valorCircular);
+		when(this.provider.getCommands()).thenReturn(commands);
+		when(commands.keys("*")).thenReturn(List.of("usuario:1"));
+		when(commands.type("usuario:1")).thenReturn("hash");
+		when(commands.hgetall("usuario:1")).thenReturn(valorCircular);
+
+		assertThatThrownBy(this.service::listarRegistros)
+				.isInstanceOf(IllegalStateException.class)
+				.hasMessage("Nao foi possivel formatar o valor Redis.");
 	}
 
 	@Test

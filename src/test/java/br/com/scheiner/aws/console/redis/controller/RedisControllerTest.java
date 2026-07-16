@@ -137,6 +137,16 @@ class RedisControllerTest {
 	}
 
 	@Test
+	@DisplayName("Deve selecionar registro para visualizacao somente leitura")
+	void deve_selecionar_registro_para_visualizacao() {
+		var registro = new RedisRegistro("usuario:1", "{\"nome\":\"Leandro\"}", "hash", -1L);
+
+		controller.visualizarRegistro(registro);
+
+		assertThat(controller.getRegistroVisualizacao()).isSameAs(registro);
+	}
+
+	@Test
 	@DisplayName("Deve manter TTL positivo ao editar registro")
 	void deve_manter_ttl_positivo_ao_editar_registro() {
 		var registro = new RedisRegistro();

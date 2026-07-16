@@ -6,14 +6,21 @@ public class RedisRegistro {
 
 	private String valor;
 
+	private String tipo;
+
 	private Long ttl;
 
 	public RedisRegistro() {
 	}
 
 	public RedisRegistro(String chave, String valor, Long ttl) {
+		this(chave, valor, "string", ttl);
+	}
+
+	public RedisRegistro(String chave, String valor, String tipo, Long ttl) {
 		this.chave = chave;
 		this.valor = valor;
+		this.tipo = tipo;
 		this.ttl = ttl;
 	}
 
@@ -31,6 +38,18 @@ public class RedisRegistro {
 
 	public void setValor(String valor) {
 		this.valor = valor;
+	}
+
+	public String getTipo() {
+		return this.tipo;
+	}
+
+	public void setTipo(String tipo) {
+		this.tipo = tipo;
+	}
+
+	public boolean isEditavel() {
+		return "string".equals(this.tipo);
 	}
 
 	public Long getTtl() {
