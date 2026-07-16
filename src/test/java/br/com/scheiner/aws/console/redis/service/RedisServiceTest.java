@@ -17,6 +17,8 @@ import br.com.scheiner.aws.console.redis.config.RedisClientProvider;
 import br.com.scheiner.aws.console.redis.config.RedisConnectionConfiguration;
 import br.com.scheiner.aws.console.redis.model.RedisConfiguracao;
 import io.lettuce.core.ScoredValue;
+import io.lettuce.core.Range;
+import io.lettuce.core.StreamMessage;
 import io.lettuce.core.api.sync.RedisCommands;
 
 class RedisServiceTest {
@@ -62,7 +64,9 @@ class RedisServiceTest {
 		when(commands.lrange("fila", 0, -1)).thenReturn(List.of("primeiro", "segundo"));
 		when(commands.smembers("tags")).thenReturn(java.util.Set.of("localstack"));
 		when(commands.zrangeWithScores("ranking", 0, -1)).thenReturn(List.of(ScoredValue.just(10.0, "Leandro")));
-		when(commands.xlen("eventos")).thenReturn(3L);
+		when(commands.xrange("eventos", Range.unbounded())).thenReturn(List.of(
+				new StreamMessage<>("eventos", "1740000000000-0", java.util.Map.of("status", "criado")),
+				new StreamMessage<>("eventos", "1740000000100-0", java.util.Map.of("status", "processado"))));
 		when(commands.ttl("usuario:1")).thenReturn(-1L);
 		when(commands.ttl("fila")).thenReturn(60L);
 		when(commands.ttl("tags")).thenReturn(-1L);
@@ -74,7 +78,9 @@ class RedisServiceTest {
 		assertThat(registros).extracting("tipo").containsExactly("stream", "list", "zset", "set", "hash");
 		assertThat(registros).allMatch(registro -> !registro.isEditavel());
 		assertThat(registros).filteredOn(registro -> registro.getChave().equals("eventos"))
-				.extracting("valor").containsExactly("[3 entradas]");
+				.extracting("valor").singleElement()
+				.satisfies(valor -> assertThat(valor.toString())
+						.contains("1740000000000-0", "criado", "1740000000100-0", "processado"));
 		verify(commands, never()).get("usuario:1");
 		verify(commands, never()).get("fila");
 	}

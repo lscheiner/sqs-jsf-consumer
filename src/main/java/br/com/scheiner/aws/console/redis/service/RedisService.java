@@ -1,11 +1,15 @@
 package br.com.scheiner.aws.console.redis.service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.lettuce.core.Range;
 
 import br.com.scheiner.aws.console.redis.config.RedisClientProvider;
 import br.com.scheiner.aws.console.redis.config.RedisConnectionConfiguration;
@@ -53,9 +57,18 @@ public class RedisService {
 			case "list" -> this.paraJson(commands.lrange(chave, 0, -1));
 			case "set" -> this.paraJson(commands.smembers(chave));
 			case "zset" -> this.paraJson(commands.zrangeWithScores(chave, 0, -1));
-			case "stream" -> "[%d entradas]".formatted(commands.xlen(chave));
+			case "stream" -> this.paraJson(commands.xrange(chave, Range.unbounded()).stream()
+					.map(mensagem -> this.formatarMensagemStream(mensagem.getId(), mensagem.getBody()))
+					.toList());
 			default -> "[%s]".formatted(tipo);
 		};
+	}
+
+	private Map<String, Object> formatarMensagemStream(String id, Map<String, String> campos) {
+		var mensagem = new LinkedHashMap<String, Object>();
+		mensagem.put("id", id);
+		mensagem.put("campos", campos);
+		return mensagem;
 	}
 
 	private String paraJson(Object valor) {
